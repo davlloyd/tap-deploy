@@ -197,6 +197,7 @@ log "Install Supply Chain Security Tools - Store"
 installLatest metadata-store scst-store.tanzu.vmware.com scst-store-values.yaml
 
 log "Install Supply Chain Security Tools - Sign"
+installLatest metadata-store scst-store.tanzu.vmware.com scst-store-values.yaml
 
 log "Install Image policy webhook"
 installLatest image-policy-webhook image-policy-webhook.signing.run.tanzu.vmware.com scst-sign-values.yaml
@@ -241,6 +242,7 @@ stringData:
   token: $META_TOKEN
 EOF
 
+log "install Supply Chain Security Tools - Scan Controller"
 installLatest scan-controller scanning.apps.tanzu.vmware.com scst-scan-controller-values.yaml
 
 log "install Supply Chain Security Tools - Scan (Grype Scanner)"
@@ -259,7 +261,7 @@ log "Add internal registry credentials"
 CHECK=$(kubectl get secret -n $DEV_NAMESPACE registry-credentials 2>&1)
 if [[ $CHECK == *"NotFound"* ]]; then
     tanzu imagepullsecret add registry-credentials \
-        --registry $REGISTRY_HOST/$REGISTRY_PROJECT \
+        --registry $REGISTRY_HOST \
         --username $REGISTRY_ACCOUNT \
         --password "$REGISTRY_PASSWORD"  \
         --namespace $DEV_NAMESPACE
@@ -279,7 +281,9 @@ ACC_EXTERNAL_IP=$(kubectl get svc -n accelerator-system acc-ui-server -o json | 
 ALV_EXTERNAL_IP=$(kubectl get svc -n app-live-view application-live-view-5112 -o json | jq -r '.status.loadBalancer.ingress[0].ip')
 
 
-echo "\n\xf0\x9f\x8e\x89  ***Install Completed***  \xf0\x9f\x98\x80\x0a\n"
+echo "\n---------------------------------------------------------------------------------\n"
+echo "\n\xf0\x9f\x8e\x89  ***Install Completed***  \xf0\x9f\x98\x80\x0a\n\n"
 echo "Cloud Native Runtimes External IP: $CNR_EXTERNAL_IP for wildcard custom DNS domain"
 echo "Application Accelerator UI IP: $ACC_EXTERNAL_IP access at http://$ACC_EXTERNAL_IP"
 echo "Application Live View UI IP: $ALV_EXTERNAL_IP access at http://$ALV_EXTERNAL_IP:5112"
+echo "\n---------------------------------------------------------------------------------\n\n\n"

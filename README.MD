@@ -1,4 +1,10 @@
-# TAP setup on GKE
+# Tanzu Application Platform (TAP) Deployment Script
+
+This script is focused on simplifying the deployment of [Tanzu Application Platform](https://tanzu.vmware.com/application-platform)
+
+Current Release:    TAP Beta 2
+Tested Platforms:   GKE
+Source Laptop:      MacOS
 
 ## Step 1: Setup Cluster
 I have been using GKE as detailed below but k8s services comprised as:
@@ -51,6 +57,11 @@ Run script *sh ./tap-install.sh*
 - Services Control Plane (SCP) Toolkit
 
 ## Step 6. Some post deployment thoughts
+A few points to note:
+- cosign imagepolicy applied
+- image policy set to warn not enforce
+
+### New Developer Target Namespace
 You can add more namespaces ready for workloads by the following steps
 1. Create Namespace
 2. Set ImagePull secret with Tanzu CLI
