@@ -4,5 +4,9 @@ cnr-values.yaml
 default-supply-chain-values.yaml
 tbs-values.yaml
 scst-scan-controller-values.yaml
+scst-sign-values.yaml
+scst-store-values.yaml
 cnr-custom-domain.yaml
+imagepolicy-cosign.yaml
+metastore-rbac.yaml
 test.sh

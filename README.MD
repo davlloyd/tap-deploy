@@ -1,160 +1,59 @@
 # TAP setup on GKE
 
 ## Step 1: Setup Cluster
+I have been using GKE as detailed below but k8s services comprised as:
+
+- local (kind), TKG 1.4+, GKE, AKS, EKS cluster
+- Version support is 1.19, 1.20 and 1.21 
+- Network policies enabled
+
+Also ensure the cluster context is set to target cluster
+
+### 1.1 Steps for test GKE cluster as below
 1. Manual install of cluster not autopilot
+2. I target regional for availability but find 4 nodes of config e3-standard-2 or the like provides enough resources (2vcpu, 8GB RAM, 100GB disk per node)
+3. Set version control to static, version 1.19, 1.20 or1.21
+4. disable auto upgrade
+5. Enable K8s Network Policy
+6. Ensure Load Balancer is enabled
 
-2. Set to 5 nodes at t-shirt size e2-standard-4
+## Step 2: Set script variable values
+Set your variables in the *tap_config.sh* file.
+1. If password files not used such as with the GCR service account key file, then add values directly into the variables and keep the file variables empty
+2. If a custom DNS domain is required for CNR then set the *CUSTOM_DOMAIN* variable. Leaving it empty will not set any value so will be knative default *welcome.com*
+3. Set deployment model variable *'*DEPLOYMENT_MODEL* as either 'local' or 'cluster' to ensure that network services are corectly using either NodePort or LoadBalancer
+4. Set a namespace target to be initially enabled for workloads
 
-3. Set version to 1.21 and disable auto upgrade
+## Step 3: Install Carvel tools 
+install Carvel cli tools <https://github.com/vmware-tanzu/carvel-kapp/releases>. Release *v0.42.0* tested with this script)
 
-# Currently tested on GKE standard clusters with both GCR and DockerHub registries
-# GKE Cluster setup
-# - Deployment model standard
-# - Target regional
-# - Control plane version 'Static' 1.21.4-gke.2300
-# - 3 zones, 3 nodes per zone
-# - Disabled auto upgrade
-# - Machine type e2-standard-2 (2vcpu, 8GB RAM, 100GB boot Disk)
-# - Enable Kubernetes network policy
-# - Enable Load Balancer
-
-# Still to do
-# - Make flexible between local deployments such as kind and cluster deployments
-# - Still to test AKS, EKS, TKGm 1.4
-
+## Step 4. Install the Tanzu CLI 
+Install Tanzu CLI 0.5.0 from TAP source on [Tanzu Network](https://network.tanzu.vmware.com/products/tanzu-application-platform#/releases/967169/file_groups/5595) and follow the procedures to initialise the required plug-ins at at [Tanzu CLI Install Instructions](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/0.2/tap-0-2/GUID-install-general.html#cli-and-plugin)
 
 
+## Step 5. Install Packages required for TAP
+Run script *sh ./tap-install.sh*
 
-#############################
-# Before Running
-#############################
+### Packages installed
+- Cloud Native Runtimes
+- App Accelerator
+- Convention Service
+- Source Controllers
+- Supply Chain Choreographer
+- Default Supply Chain
+- Developer Convcentions
+- Application Live View
+- Service Bindings
+- Supply Chain Security Tools
+- Supply Chain Security Tools - Sign
+- Supply Chain Security Tools - Scan
+- API portal
+- Services Control Plane (SCP) Toolkit
 
-#  1) Make sure cluster context is set to target cluster
-#  2) Make sure target cluster is running k8s version releases 1.19, 1.20 or 1.21
-#  3) Set your variables in the tap_env.sh. If password files not set then add values directly into the variables and keep the file varibales empty
-#  4) install Carvel cli tools https://github.com/vmware-tanzu/carvel-kapp/releases (v0.42.0 tested with this script)
-#  5) install Tanzu cli tool for your Mac/Linux machine https://github.com/pivotal/docs-tap/blob/main/install-general.md#prereqs (0.5.0 tested with this script)
-
-
-
-
-## Step 2. pre-reqs
-1. Install carvel kapp CLI tool release v0.42 from https://github.com/vmware-tanzu/carvel-kapp/releases
-
-2. Install kapp controller
-    > kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.27.0/release.yml
-    validate install with command
-    > kubectl get deployment kapp-controller -n kapp-controller  -o yaml | grep kapp-controller.carvel.dev/version
-
-3. Install secret gen controller
-    > kapp deploy -a sg -f https://github.com/vmware-tanzu/carvel-secretgen-controller/releases/download/v0.5.0/release.yml
-    validate install with command
-    > kubectl get pods -A | grep secretgen-controller
-
-4. Install CertManager
-    > kapp deploy -a cert-manager -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
-
-5. Install FluxCD Source-Controller
-    > kubectl create namespace flux-system
-    kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --serviceaccount=flux-system:default
-    kapp deploy -a flux-source-controller -n flux-system \
-    -f https://github.com/fluxcd/source-controller/releases/download/v0.15.4/source-controller.crds.yaml \
-    -f https://github.com/fluxcd/source-controller/releases/download/v0.15.4/source-controller.deployment.yaml
-
-## Step 3. Install the Tanzu CLI 
-6. Install Tanzu CLI 0.5.0 from TAP source on Pivnet https://network.tanzu.vmware.com/products/tanzu-application-platform#/releases/967169/file_groups/5595 and follow the procedures to initialise the required plug-ins at at https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/0.2/tap-0-2/GUID-install-general.html#cli-and-plugin
-
-
-## Step 4. Install Packages required for TAP
-1. Create target namespace
-    > kubectl create ns tap-install 
-
-2. Create image pull secret with Pivnet account
-    > tanzu imagepullsecret add tap-registry --username TANZU-NET-USER --password TANZU-NET-PASSWORD --registry registry.tanzu.vmware.com --export-to-all-namespaces --namespace tap-install
-
-3. Add TAP package repository
-    > tanzu package repository add tanzu-tap-repository --url registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:0.2.0 --namespace tap-install
-   Install can be validated with command below. Should show status as **Reconcile Succeeded**
-   > tanzu package repository get tanzu-tap-repository --namespace tap-install
-
-
-4. Install packages
-    - Install **CNR** with defautl values
-        - As a follow on step run the following for each NS that you want to deploy into CNR if not deployed via supplychain
-            > kubectl create secret generic pull-secret --from-literal=.dockerconfigjson={} --type=kubernetes.io/dockerconfigjson
-            kubectl annotate secret pull-secret secretgen.carvel.dev/image-pull-secret=""
-            kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "pull-secret"}]}'
-    - Install **App Accelerator** with default values
-    - Install **Convention Service** 
-    - Install **Source Controller**
-    - Install **Supply Chain Choreographer**
-    - Install **Default Supply Chain**
-        > tanzu imagepullsecret add registry-credentials --registry docker.io --username davlloyd --password B3ach8um! --export-to-all-namespaces --namespace tap-install
-        - **storeg needs db changed in config**
-        
-    - Install **Developer Convcentions**
-    - Install **Application Live View**
-    - Install **Service Bindings**
-    - Install **Supply Chain Security Tools**
-    - Install **Supply Chain Security Tools - Sign**
-        - Create Service account (different command for private registry as needs the creds secret)
-        > cat <<EOF | kubectl apply -f -
-        apiVersion: v1
-        kind: ServiceAccount
-        metadata:
-        name: registry-credentials
-        namespace: image-policy-system
-        EOF
-        - Create cluster image policy
-        > cat <<EOF | kubectl apply -f -
-        apiVersion: signing.run.tanzu.vmware.com/v1alpha1
-        kind: ClusterImagePolicy
-        metadata:
-        name: image-policy
-        spec:
-        verification:
-        exclude:
-            resources:
-            namespaces:
-            - kube-system
-        keys:
-        - name: cosign-key
-            publicKey: |
-            -----BEGIN PUBLIC KEY-----
-            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhyQCx0E9wQWSFI9ULGwy3BuRklnt
-            IqozONbbdbqz11hlRJy9c7SG+hdcFl9jE9uE/dwtuwU2MqU9T/cN0YkWww==
-            -----END PUBLIC KEY-----
-        images:
-        - namePattern: gcr.io/projectsigstore/cosign*
-            keys:
-            - name: cosign-key
-        EOF
-    - Install **Supply Chain Security Tools - Scan**
-      - Lots of steps, need to install scanners
-    - Install **API portal**
-    - Install **Services Control Plane (SCP) Toolkit**
-    - Verify installed packages
-      > tanzu package installed list --namespace tap-install
-
-5. Enable Developer namespace for packages
-
-
-tanzu package installed update default-supply-chain \
- --package-name default-supply-chain.tanzu.vmware.com \
- --version 0.2.0 \
- --namespace tap-install \
- --values-file default-supply-chain-values.yaml
-
-tanzu package installed update metadata-store \
-  --package-name scst-store.tanzu.vmware.com \
-  --version 1.0.0-beta.0 \
-  --namespace tap-install \
-  --values-file scst-store-values.yaml
-
-
-
-tanzu package install metadata-store \
-  --package-name scst-store.tanzu.vmware.com \
-  --version 1.0.0-beta.0 \
-  --namespace tap-install \
-  --values-file scst-store-values.yaml
+## Step 6. Some post deployment thoughts
+You can add more namespaces ready for workloads by the following steps
+1. Create Namespace
+2. Set ImagePull secret with Tanzu CLI
+3. Apply the Developer security artefect *dev-namespace-enable.yaml*
+4. Edit the App Live view configuration file *app-live-view-values* and update package woth the command:
+    tanzu package installed update app-live-view appliveview.tanzu.vmware.com app-live-view-values.yaml
