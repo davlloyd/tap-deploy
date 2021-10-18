@@ -25,7 +25,7 @@ function log() {
 }
 
 
-source tap-config.sh
+source tap.conf
 source tap_managefiles.sh
 
 
