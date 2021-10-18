@@ -191,6 +191,7 @@ metadata:
   name: metadata-store-read-write-client
   namespace: metadata-store
 automountServiceAccountToken: false
+
 EOF
 
 ####
@@ -250,5 +251,6 @@ roleRef:
   name: kapp-permissions
 subjects:
   - kind: ServiceAccount
-    name: service-account # use value from "Install Default Supply Chain"
+    name: service-account"
+
 EOF

@@ -9,4 +9,5 @@ scst-store-values.yaml
 cnr-custom-domain.yaml
 imagepolicy-cosign.yaml
 metastore-rbac.yaml
+dev-namespace-enable.yaml
 test.sh

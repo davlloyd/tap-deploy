@@ -99,6 +99,13 @@ kapp deploy -a flux-source-controller -n flux-system \
     -f https://github.com/fluxcd/source-controller/releases/download/v0.15.4/source-controller.crds.yaml \
     -f https://github.com/fluxcd/source-controller/releases/download/v0.15.4/source-controller.deployment.yaml  --yes
 
+# Install Tekton
+if $INSTALL_TEKTON; then
+  log "Installing Tekton"
+    kapp deploy --yes -a tekton \
+      -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.28.0/release.yaml
+fi
+
 # Installing TAP packages
 log "Install TAP Packages"
 
@@ -254,7 +261,7 @@ installLatest api-portal api-portal.tanzu.vmware.com
 log "Install Services Control Plane (SCP) Toolkit"
 installLatest scp-toolkit scp-toolkit.tanzu.vmware.com
 
-log "Setup default namespace for workloads"
+log "Setup $DEV_NAMESPACE namespace for workloads"
 
 log "Add internal registry credentials"
 
