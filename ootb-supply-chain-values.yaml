@@ -1,5 +1,0 @@
----
-registry:
-  server: us.gcr.io
-  repository: lloyd-266015
-service_account: service-account
