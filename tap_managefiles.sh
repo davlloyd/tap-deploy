@@ -1,6 +1,6 @@
 
 
-# Create configuration files for TAP Packages
+# Create configuration files for TAP Packages and a single package profile
 # - app-accelerator-values.yaml
 # - app-live-view-values.yaml
 # - cnr-values.yaml
@@ -38,15 +38,56 @@ fi
 shopt -u nocasematch
 
 ####
+
+
+log "Create TAP Profile File"
+
+cat > "tap-values.yaml" <<EOF
+profile: $PACKAGE_PROFILE
+
+buildservice:
+  kp_default_repository: "$REGISTRY_HOST/$REGISTRY_PROJECT/$REGISTRY_REPO_TBS"
+  kp_default_repository_username: "$REGISTRY_ACCOUNT"
+  kp_default_repository_password: '$REGISTRY_PASSWORD'
+  tanzunet_username: "$PIVNET_ACCOUNT"
+  tanzunet_password: "$PIVNET_PASSWORD"
+
+supply_chain: basic
+
+ootb_supply_chain_basic:
+  registry:
+    server: "$REGISTRY_HOST"
+    repository: "$REGISTRY_PROJECT/supply-chain"
+
+learningcenter:
+  ingressDomain: "$CUSTOM_DOMAIN"
+
+tap_gui:
+  service_type: "$SERVICE_TYPE"
+
+cnrs:
+  $CNR_PROVIDER
+
+accelerator:
+  service_type: "$SERVICE_TYPE"
+  watched_namespace: "$DEV_NAMESPACE"
+EOF
+
+
+
+####
+
 log "Creating configuration file: app-accelerator-values.yaml"
 
 cat > "app-accelerator-values.yaml" <<EOF
 server:
   service_type: "$SERVICE_TYPE"
   watched_namespace: "$DEV_NAMESPACE"
+samples:
+  include: true
 EOF
 
-####
+
 log "Creating configuration file: app-live-view-values.yaml"
 
 cat > "app-live-view-values.yaml" <<EOF
@@ -56,17 +97,9 @@ server_namespace: app-live-view
 EOF
 
 ####
-log "Creating configuration file: cnr-values.yaml"
+log "Creating configuration file: ootb-supply-chain-values.yaml"
 
-cat > "cnr-values.yaml" <<EOF
----
-$CNR_PROVIDER
-EOF
-
-####
-log "Creating configuration file: default-supply-chain-values.yaml"
-
-cat > "default-supply-chain-values.yaml" <<EOF
+cat > "ootb-supply-chain-values.yaml" <<EOF
 ---
 registry:
   server: $REGISTRY_HOST
@@ -100,6 +133,14 @@ data:
 EOF
 
 ####
+log "Creating configuration file: scst-store-values.yaml"
+
+cat > "scst-store-values.yaml" <<EOF
+db_password: "PASSWORD-0123"
+app_service_type: "$SERVICE_TYPE"
+EOF
+
+####
 log "Creating configuration file: scst-sign-values.yaml"
 
 cat > "scst-sign-values.yaml" <<EOF
@@ -108,9 +149,9 @@ warn_on_unmatched: true
 EOF
 
 ####
-log "Creating configuration file: app-live-view-values.yaml"
+log "Creating configuration file: scst-scan-controller-values.yaml"
 
-cat > "scst-store-values.yaml" <<EOF
+cat > "scst-scan-controller-values.yaml" <<EOF
 api_host: "localhost"
 api_port: 9443
 app_service_type: "LoadBalancer"
@@ -160,43 +201,21 @@ log "Creating configuration file: metastore-rbac.yaml"
 cat > "metastore-rbac.yaml" <<EOF
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: metadata-store-read-write
-  namespace: metadata-store
 rules:
-- resources: ["all"]
-  verbs: ["get", "create", "update"]
-  apiGroups: [ "metadata-store/v1" ]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: metadata-store-read-write
-  namespace: metadata-store
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: metadata-store-read-write
-subjects:
-- kind: ServiceAccount
-  name: metadata-store-read-write-client
-  namespace: metadata-store
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: metadata-store-read-write-client
-  namespace: metadata-store
-automountServiceAccountToken: false
+- apiGroups: [ "metadata-store/v1" ]
+  resources: [ "all" ]
+  verbs: [ "get", "create", "update" ]
 
 EOF
 
 ####
 log "Creating configuration file: dev-namespace-enable.yaml"
 cat > "dev-namespace-enable.yaml" <<EOF
+---
+
 apiVersion: v1
 kind: Secret
 metadata:
@@ -211,7 +230,7 @@ data:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: service-account # use value from "Install Default Supply Chain"
+  name: default
 secrets:
   - name: registry-credentials
 imagePullSecrets:
@@ -229,6 +248,10 @@ rules:
   - apiGroups:
       - servicebinding.io
     resources: ['servicebindings']
+    verbs: ['*']
+  - apiGroups:
+      - services.tanzu.vmware.com
+    resources: ['resourceclaims']
     verbs: ['*']
   - apiGroups:
       - serving.knative.dev
@@ -251,6 +274,9 @@ roleRef:
   name: kapp-permissions
 subjects:
   - kind: ServiceAccount
-    name: service-account"
+    name: default
+
 
 EOF
+
+####

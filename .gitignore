@@ -11,3 +11,6 @@ imagepolicy-cosign.yaml
 metastore-rbac.yaml
 dev-namespace-enable.yaml
 test.sh
+ui/*
+.DS_Store
+tap-gui-values.yaml

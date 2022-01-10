@@ -17,7 +17,7 @@ Also ensure the cluster context is set to target cluster
 
 ### 1.1 Steps for test GKE cluster as below
 1. Manual install of cluster not autopilot
-2. I target regional for availability but find 4 nodes of config e3-standard-2 or the like provides enough resources (2vcpu, 8GB RAM, 100GB disk per node)
+2. I target regional for availability but find 4 nodes of config e2-standard-2 or the like provides enough resources (2vcpu, 8GB RAM, 100GB disk per node)
 3. Set version control to static, version 1.19, 1.20 or1.21
 4. disable auto upgrade
 5. Enable K8s Network Policy
