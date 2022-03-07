@@ -91,7 +91,7 @@ metadata_store:
   app_service_type: $SERVICE_TYPE
 
 grype:
-  service_type: "tap-registry"
+  targetImagePullSecret: "registry-credentials"
   namespace: "$DEV_NAMESPACE"
 
 contour:
