@@ -22,3 +22,4 @@ contour-rbac.yml
 pipeline-test.yaml
 imagepolicy-scan.yaml
 .vscode
+tap.conf
