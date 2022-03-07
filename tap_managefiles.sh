@@ -42,8 +42,9 @@ shopt -u nocasematch
 
 log "Create TAP Profile File"
 
-cat > "tap-values.yaml" <<EOF
+cat > "tap-values.yml" <<EOF
 profile: $PACKAGE_PROFILE
+ceip_policy_disclosed: true 
 
 buildservice:
   kp_default_repository: "$REGISTRY_HOST/$REGISTRY_PROJECT/$REGISTRY_REPO_TBS"
@@ -51,6 +52,8 @@ buildservice:
   kp_default_repository_password: '$REGISTRY_PASSWORD'
   tanzunet_username: "$PIVNET_ACCOUNT"
   tanzunet_password: "$PIVNET_PASSWORD"
+  descriptor_name: "$DESCRIPTOR_NAME"
+  enable_automatic_dependency_updates: true
 
 supply_chain: basic
 
@@ -58,24 +61,122 @@ ootb_supply_chain_basic:
   registry:
     server: "$REGISTRY_HOST"
     repository: "$REGISTRY_PROJECT/supply-chain"
+  gitops:
+    ssh_secret: ""
 
 learningcenter:
-  ingressDomain: "$CUSTOM_DOMAIN"
+  ingressDomain: "learningcenter.$CUSTOM_DOMAIN"
 
 tap_gui:
   service_type: "$SERVICE_TYPE"
+  ingressEnabled: "true"
+  ingressDomain: "$CUSTOM_DOMAIN"
+  app_config:
+    app:
+      baseUrl: http://tap-gui.$CUSTOM_DOMAIN
+    catalog:
+      locations:
+        - type: url
+          target: $GIT_CATALOG_URL/catalog-info.yaml
+    backend:
+      baseUrl: http://tap-gui.$CUSTOM_DOMAIN
+      cors:
+        origin: http://tap-gui.$CUSTOM_DOMAIN
 
 cnrs:
-  $CNR_PROVIDER
+  domain_name: "apps.$CUSTOM_DOMAIN"
 
-accelerator:
-  service_type: "$SERVICE_TYPE"
-  watched_namespace: "$DEV_NAMESPACE"
+
+metadata_store:
+  app_service_type: $SERVICE_TYPE
+
+grype:
+  service_type: "tap-registry"
+  namespace: "$DEV_NAMESPACE"
+
+contour:
+  envoy:
+    service:
+      type: $SERVICE_TYPE
 EOF
 
 
 
 ####
+
+
+log "Creating Cert-Manager RBAC file: cert-manager-rbac.yml"
+
+cat > "cert-manager-rbac.yml" <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-tap-install-cluster-admin-role
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-tap-install-cluster-admin-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-tap-install-cluster-admin-role
+subjects:
+- kind: ServiceAccount
+  name: cert-manager-tap-install-sa
+  namespace: tap-install
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-tap-install-sa
+  namespace: tap-install
+
+EOF
+
+
+log "Creating Contour RBAC file: contour-rbac.yml"
+
+cat > "contour-rbac.yml" <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: contour-tap-install-cluster-admin-role
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: contour-tap-install-cluster-admin-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: contour-tap-install-cluster-admin-role
+subjects:
+- kind: ServiceAccount
+  name: contour-tap-install-sa
+  namespace: tap-install
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: contour-tap-install-sa
+  namespace: tap-install
+EOF
+
 
 log "Creating configuration file: app-accelerator-values.yaml"
 
@@ -225,7 +326,6 @@ metadata:
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: e30K
-
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -236,47 +336,67 @@ secrets:
 imagePullSecrets:
   - name: registry-credentials
   - name: tap-registry
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: kapp-permissions
-  annotations:
-    kapp.k14s.io/change-group: "role"
+  name: default
 rules:
-  - apiGroups:
-      - servicebinding.io
-    resources: ['servicebindings']
-    verbs: ['*']
-  - apiGroups:
-      - services.tanzu.vmware.com
-    resources: ['resourceclaims']
-    verbs: ['*']
-  - apiGroups:
-      - serving.knative.dev
-    resources: ['services']
-    verbs: ['*']
-  - apiGroups: [""]
-    resources: ['configmaps']
-    verbs: ['get', 'watch', 'list', 'create', 'update', 'patch', 'delete']
-
+- apiGroups: [source.toolkit.fluxcd.io]
+  resources: [gitrepositories]
+  verbs: ['*']
+- apiGroups: [source.apps.tanzu.vmware.com]
+  resources: [imagerepositories]
+  verbs: ['*']
+- apiGroups: [carto.run]
+  resources: [deliverables, runnables]
+  verbs: ['*']
+- apiGroups: [kpack.io]
+  resources: [images]
+  verbs: ['*']
+- apiGroups: [conventions.apps.tanzu.vmware.com]
+  resources: [podintents]
+  verbs: ['*']
+- apiGroups: [""]
+  resources: ['configmaps']
+  verbs: ['*']
+- apiGroups: [""]
+  resources: ['pods']
+  verbs: ['list']
+- apiGroups: [tekton.dev]
+  resources: [taskruns, pipelineruns]
+  verbs: ['*']
+- apiGroups: [tekton.dev]
+  resources: [pipelines]
+  verbs: ['list']
+- apiGroups: [kappctrl.k14s.io]
+  resources: [apps]
+  verbs: ['*']
+- apiGroups: [serving.knative.dev]
+  resources: ['services']
+  verbs: ['*']
+- apiGroups: [servicebinding.io]
+  resources: ['servicebindings']
+  verbs: ['*']
+- apiGroups: [services.apps.tanzu.vmware.com]
+  resources: ['resourceclaims']
+  verbs: ['*']
+- apiGroups: [scanning.apps.tanzu.vmware.com]
+  resources: ['imagescans', 'sourcescans']
+  verbs: ['*']
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: kapp-permissions
-  annotations:
-    kapp.k14s.io/change-rule: "upsert after upserting role"
+  name: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: kapp-permissions
+  name: default
 subjects:
   - kind: ServiceAccount
     name: default
-
-
+    
 EOF
 
 ####
