@@ -167,11 +167,11 @@ log "Setup $DEV_NAMESPACE namespace for workloads"
 
 log "Add internal registry credentials"
 
-CHECK=$(kubectl get secret -n alpha registry-credentials 2>&1)
+CHECK=$(kubectl get secret -n $DEV_NAMESPACE registry-credentials 2>&1)
 if [[ $CHECK == *"NotFound"* ]]; then
     tanzu secret registry add registry-credentials \
         --username $REGISTRY_ACCOUNT \
-        --password '$REGISTRY_PASSWORD' \
+        --password "$REGISTRY_PASSWORD" \
         --server $REGISTRY_HOST \
         --namespace $DEV_NAMESPACE
 else

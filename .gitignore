@@ -15,7 +15,7 @@ ui/*
 .DS_Store
 tap-gui-values.yaml
 ootb-supply-chain-values.yaml
-tap-values.*
+tap-values*.*
 ui\*
 cert-manager-rbac.yml
 contour-rbac.yml
