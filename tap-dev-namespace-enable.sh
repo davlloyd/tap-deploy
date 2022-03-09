@@ -7,7 +7,7 @@ function log() {
 
 if [ -n "$1" ]; then
   source tap.conf
-  source tap_managefiles.sh
+  #source tap_managefiles.sh
 
   DEV_NAMESPACE=$1
   ### Set namesapce for developer access and application deployment
