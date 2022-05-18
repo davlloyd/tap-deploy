@@ -82,6 +82,10 @@ tap_gui:
       baseUrl: http://tap-gui.$CUSTOM_DOMAIN
       cors:
         origin: http://tap-gui.$CUSTOM_DOMAIN
+    integrations:
+      github:
+        - host: github.com
+          token: $GIT_ACCESS_TOKEN
 
 cnrs:
   domain_name: "apps.$CUSTOM_DOMAIN"
