@@ -55,9 +55,23 @@ buildservice:
   descriptor_name: "$DESCRIPTOR_NAME"
   enable_automatic_dependency_updates: true
 
-supply_chain: basic
+supply_chain: $SUPPLY_CHAIN
 
 ootb_supply_chain_basic:
+  registry:
+    server: "$REGISTRY_HOST"
+    repository: "$REGISTRY_PROJECT/supply-chain"
+  gitops:
+    ssh_secret: ""
+
+ootb_supply_chain_testing:
+  registry:
+    server: "$REGISTRY_HOST"
+    repository: "$REGISTRY_PROJECT/supply-chain"
+  gitops:
+    ssh_secret: ""
+
+ootb_supply_chain_testing_scanning:
   registry:
     server: "$REGISTRY_HOST"
     repository: "$REGISTRY_PROJECT/supply-chain"

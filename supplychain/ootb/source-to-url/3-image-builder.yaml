@@ -1,0 +1,98 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterImageTemplate
+metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterImageTemplate/kpack-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterImageTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1652683466758541831","kapp.k14s.io/association":"v1.4543b39a9204f82bc4eba330b4fc99ba"},"name":"kpack-template"},"spec":{"imagePath":".status.latestImage","params":[{"default":"default","name":"serviceAccount"},{"default":"default","name":"clusterBuilder"},{"default":{},"name":"registry"}],"ytt":"#@
+      load(\"@ytt:data\", \"data\")\n\n#@ def merge_labels(fixed_values):\n#@   labels
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"labels\"):\n#@     labels.update(data.values.workload.metadata.labels)\n#@   end\n#@   labels.update(fixed_values)\n#@   return
+      labels\n#@ end\n\n#@ def param(key):\n#@   if not key in data.values.params:\n#@     return
+      None\n#@   end\n#@   return data.values.params[key]\n#@ end\n\n#@ def image():\n#@   return
+      \"/\".join([\n#@    data.values.params.registry.server,\n#@    data.values.params.registry.repository,\n#@    \"-\".join([\n#@      data.values.workload.metadata.name,\n#@      data.values.workload.metadata.namespace,\n#@    ])\n#@   ])\n#@
+      end\n\napiVersion: kpack.io/v1alpha2\nkind: Image\nmetadata:\n  name: #@ data.values.workload.metadata.name\n  labels:
+      #@ merge_labels({ \"app.kubernetes.io/component\": \"build\" })\nspec:\n  tag:
+      #@ image()\n  serviceAccountName: #@ data.values.params.serviceAccount\n  builder:\n    kind:
+      ClusterBuilder\n    name: #@ data.values.params.clusterBuilder\n  source:\n    blob:\n      url:
+      #@ data.values.source.url\n    #@ if/end hasattr(data.values.workload.spec.source,
+      \"subPath\"):\n    subPath: #@ data.values.workload.spec.source.subPath\n  build:\n    env:\n    -
+      name: BP_OCI_SOURCE\n      value: #@ data.values.source.revision\n    #@ if/end
+      param(\"live-update\"):\n    - name: BP_LIVE_RELOAD_ENABLED\n      value: ''true''\n    #@
+      if hasattr(data.values.workload.spec.build, \"env\"):\n    #@ for var in data.values.workload.spec.build.env:\n    -
+      name: #@ var.name\n      value: #@ var.value\n    #@ end\n    #@ end\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-05-16T06:44:31Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1652683466758541831"
+    kapp.k14s.io/association: v1.4543b39a9204f82bc4eba330b4fc99ba
+  name: kpack-template
+  resourceVersion: "41332"
+  uid: c946934e-31a3-49d7-8dfe-7a3b9ed90c63
+spec:
+  imagePath: .status.latestImage
+  params:
+  - default: default
+    name: serviceAccount
+  - default: default
+    name: clusterBuilder
+  - default: {}
+    name: registry
+  ytt: |
+    #@ load("@ytt:data", "data")
+
+    #@ def merge_labels(fixed_values):
+    #@   labels = {}
+    #@   if hasattr(data.values.workload.metadata, "labels"):
+    #@     labels.update(data.values.workload.metadata.labels)
+    #@   end
+    #@   labels.update(fixed_values)
+    #@   return labels
+    #@ end
+
+    #@ def param(key):
+    #@   if not key in data.values.params:
+    #@     return None
+    #@   end
+    #@   return data.values.params[key]
+    #@ end
+
+    #@ def image():
+    #@   return "/".join([
+    #@    data.values.params.registry.server,
+    #@    data.values.params.registry.repository,
+    #@    "-".join([
+    #@      data.values.workload.metadata.name,
+    #@      data.values.workload.metadata.namespace,
+    #@    ])
+    #@   ])
+    #@ end
+
+    apiVersion: kpack.io/v1alpha2
+    kind: Image
+    metadata:
+      name: #@ data.values.workload.metadata.name
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "build" })
+    spec:
+      tag: #@ image()
+      serviceAccountName: #@ data.values.params.serviceAccount
+      builder:
+        kind: ClusterBuilder
+        name: #@ data.values.params.clusterBuilder
+      source:
+        blob:
+          url: #@ data.values.source.url
+        #@ if/end hasattr(data.values.workload.spec.source, "subPath"):
+        subPath: #@ data.values.workload.spec.source.subPath
+      build:
+        env:
+        - name: BP_OCI_SOURCE
+          value: #@ data.values.source.revision
+        #@ if/end param("live-update"):
+        - name: BP_LIVE_RELOAD_ENABLED
+          value: 'true'
+        #@ if hasattr(data.values.workload.spec.build, "env"):
+        #@ for var in data.values.workload.spec.build.env:
+        - name: #@ var.name
+          value: #@ var.value
+        #@ end
+        #@ end

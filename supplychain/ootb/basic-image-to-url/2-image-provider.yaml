@@ -1,0 +1,49 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterImageTemplate
+metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterImageTemplate/image-provider-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterImageTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1652683466758541831","kapp.k14s.io/association":"v1.d3ab95c78fb961557d96732ec2eb395f"},"name":"image-provider-template"},"spec":{"imagePath":".status.artifact.revision","params":[{"default":"default","name":"serviceAccount"}],"ytt":"#@
+      load(\"@ytt:data\", \"data\")\n\n#@ def merge_labels(fixed_values):\n#@   labels
+      = {}\n#@   if hasattr(data.values.workload.metadata, \"labels\"):\n#@     labels.update(data.values.workload.metadata.labels)\n#@   end\n#@   labels.update(fixed_values)\n#@   return
+      labels\n#@ end\n\n---\napiVersion: source.apps.tanzu.vmware.com/v1alpha1\nkind:
+      ImageRepository\nmetadata:\n  name: #@ data.values.workload.metadata.name\n  labels:
+      #@ merge_labels({ \"app.kubernetes.io/component\": \"image\" })\nspec:\n  image:
+      #@ data.values.workload.spec.image\n  interval: 1m0s\n  serviceAccountName:
+      #@ data.values.params.serviceAccount\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-05-16T06:44:31Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1652683466758541831"
+    kapp.k14s.io/association: v1.d3ab95c78fb961557d96732ec2eb395f
+  name: image-provider-template
+  resourceVersion: "41331"
+  uid: 1a9f2533-d266-4703-bba4-4da62618253e
+spec:
+  imagePath: .status.artifact.revision
+  params:
+  - default: default
+    name: serviceAccount
+  ytt: |
+    #@ load("@ytt:data", "data")
+
+    #@ def merge_labels(fixed_values):
+    #@   labels = {}
+    #@   if hasattr(data.values.workload.metadata, "labels"):
+    #@     labels.update(data.values.workload.metadata.labels)
+    #@   end
+    #@   labels.update(fixed_values)
+    #@   return labels
+    #@ end
+
+    ---
+    apiVersion: source.apps.tanzu.vmware.com/v1alpha1
+    kind: ImageRepository
+    metadata:
+      name: #@ data.values.workload.metadata.name
+      labels: #@ merge_labels({ "app.kubernetes.io/component": "image" })
+    spec:
+      image: #@ data.values.workload.spec.image
+      interval: 1m0s
+      serviceAccountName: #@ data.values.params.serviceAccount

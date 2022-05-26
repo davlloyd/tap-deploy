@@ -1,0 +1,139 @@
+apiVersion: carto.run/v1alpha1
+kind: ClusterTemplate
+metadata:
+  annotations:
+    kapp.k14s.io/identity: v1;/carto.run/ClusterTemplate/config-writer-template;carto.run/v1alpha1
+    kapp.k14s.io/original: '{"apiVersion":"carto.run/v1alpha1","kind":"ClusterTemplate","metadata":{"labels":{"kapp.k14s.io/app":"1652683466758541831","kapp.k14s.io/association":"v1.03a82cf1322797de0619e77144b895b2"},"name":"config-writer-template"},"spec":{"params":[{"default":"default","name":"serviceAccount"},{"default":{},"name":"registry"}],"ytt":"#@
+      load(\"@ytt:data\", \"data\")\n#@ load(\"@ytt:json\", \"json\")\n#@ load(\"@ytt:base64\",
+      \"base64\")\n\n#@ def has_git_params():\n#@   if ''gitops_repository_prefix''
+      in data.values.params:\n#@     return True\n#@   end\n#@\n#@   if ''gitops_repository''
+      in data.values.params:\n#@     return True\n#@   end\n#@\n#@   return False\n#@
+      end\n\n#@ def is_gitops():\n#@   return has_git_params()\n#@ end\n\n#@ def param(key):\n#@   if
+      not key in data.values.params:\n#@     return None\n#@   end\n#@   return data.values.params[key]\n#@
+      end\n\n#@ def git_repository():\n#@   if ''gitops_repository'' in data.values.params:\n#@     return
+      param(\"gitops_repository\")\n#@   end\n#@\n#@   prefix = param(\"gitops_repository_prefix\")\n#@   return
+      prefix + data.values.workload.metadata.name + \".git\"\n#@ end\n\n#@ def image():\n#@   return
+      \"/\".join([\n#@    data.values.params.registry.server,\n#@    data.values.params.registry.repository,\n#@    \"-\".join([\n#@      data.values.workload.metadata.name,\n#@      data.values.workload.metadata.namespace,\n#@      \"bundle\",\n#@    ])\n#@   ])
+      + \":\" + data.values.workload.metadata.uid\n#@ end\n\n\n---\napiVersion: carto.run/v1alpha1\nkind:
+      Runnable\nmetadata:\n  name: #@ data.values.workload.metadata.name + \"-config-writer\"\n  labels:\n    app.kubernetes.io/component:
+      config-writer\n    #@ if/end hasattr(data.values.workload.metadata, \"labels\")
+      and hasattr(data.values.workload.metadata.labels, \"app.kubernetes.io/part-of\"):\n    app.kubernetes.io/part-of:
+      #@ data.values.workload.metadata.labels[\"app.kubernetes.io/part-of\"]\nspec:\n  #@
+      if/end hasattr(data.values.workload.spec, \"serviceAccountName\"):\n  serviceAccountName:
+      #@ data.values.workload.spec.serviceAccountName\n\n  runTemplateRef:\n    name:
+      tekton-taskrun\n\n  inputs:\n    serviceAccount: #@ data.values.params.serviceAccount\n    taskRef:\n      kind:
+      ClusterTask\n      name: #@ \"git-writer\" if is_gitops() else \"image-writer\"\n    params:\n      #@
+      if is_gitops():\n      - name: git_repository\n        value: #@ git_repository()\n      -
+      name: git_branch\n        value: #@ param(\"gitops_branch\")\n      - name:
+      git_user_name\n        value: #@ param(\"gitops_user_name\")\n      - name:
+      git_user_email\n        value: #@ param(\"gitops_user_email\")\n      - name:
+      git_commit_message\n        value: #@ param(\"gitops_commit_message\")\n      -
+      name: git_files\n        value: #@ base64.encode(json.encode(data.values.config))\n      #@
+      else:\n      - name: files\n        value: #@ base64.encode(json.encode(data.values.config))\n      -
+      name: bundle\n        value: #@ image()\n      #@ end\n"}}'
+    kapp.k14s.io/original-diff-md5: c6e94dc94aed3401b5d0f26ed6c0bff3
+  creationTimestamp: "2022-05-16T06:44:31Z"
+  generation: 1
+  labels:
+    kapp.k14s.io/app: "1652683466758541831"
+    kapp.k14s.io/association: v1.03a82cf1322797de0619e77144b895b2
+  name: config-writer-template
+  resourceVersion: "41308"
+  uid: 57f0fd74-47ad-4861-a5e3-5caa2e861601
+spec:
+  params:
+  - default: default
+    name: serviceAccount
+  - default: {}
+    name: registry
+  ytt: |
+    #@ load("@ytt:data", "data")
+    #@ load("@ytt:json", "json")
+    #@ load("@ytt:base64", "base64")
+
+    #@ def has_git_params():
+    #@   if 'gitops_repository_prefix' in data.values.params:
+    #@     return True
+    #@   end
+    #@
+    #@   if 'gitops_repository' in data.values.params:
+    #@     return True
+    #@   end
+    #@
+    #@   return False
+    #@ end
+
+    #@ def is_gitops():
+    #@   return has_git_params()
+    #@ end
+
+    #@ def param(key):
+    #@   if not key in data.values.params:
+    #@     return None
+    #@   end
+    #@   return data.values.params[key]
+    #@ end
+
+    #@ def git_repository():
+    #@   if 'gitops_repository' in data.values.params:
+    #@     return param("gitops_repository")
+    #@   end
+    #@
+    #@   prefix = param("gitops_repository_prefix")
+    #@   return prefix + data.values.workload.metadata.name + ".git"
+    #@ end
+
+    #@ def image():
+    #@   return "/".join([
+    #@    data.values.params.registry.server,
+    #@    data.values.params.registry.repository,
+    #@    "-".join([
+    #@      data.values.workload.metadata.name,
+    #@      data.values.workload.metadata.namespace,
+    #@      "bundle",
+    #@    ])
+    #@   ]) + ":" + data.values.workload.metadata.uid
+    #@ end
+
+
+    ---
+    apiVersion: carto.run/v1alpha1
+    kind: Runnable
+    metadata:
+      name: #@ data.values.workload.metadata.name + "-config-writer"
+      labels:
+        app.kubernetes.io/component: config-writer
+        #@ if/end hasattr(data.values.workload.metadata, "labels") and hasattr(data.values.workload.metadata.labels, "app.kubernetes.io/part-of"):
+        app.kubernetes.io/part-of: #@ data.values.workload.metadata.labels["app.kubernetes.io/part-of"]
+    spec:
+      #@ if/end hasattr(data.values.workload.spec, "serviceAccountName"):
+      serviceAccountName: #@ data.values.workload.spec.serviceAccountName
+
+      runTemplateRef:
+        name: tekton-taskrun
+
+      inputs:
+        serviceAccount: #@ data.values.params.serviceAccount
+        taskRef:
+          kind: ClusterTask
+          name: #@ "git-writer" if is_gitops() else "image-writer"
+        params:
+          #@ if is_gitops():
+          - name: git_repository
+            value: #@ git_repository()
+          - name: git_branch
+            value: #@ param("gitops_branch")
+          - name: git_user_name
+            value: #@ param("gitops_user_name")
+          - name: git_user_email
+            value: #@ param("gitops_user_email")
+          - name: git_commit_message
+            value: #@ param("gitops_commit_message")
+          - name: git_files
+            value: #@ base64.encode(json.encode(data.values.config))
+          #@ else:
+          - name: files
+            value: #@ base64.encode(json.encode(data.values.config))
+          - name: bundle
+            value: #@ image()
+          #@ end
