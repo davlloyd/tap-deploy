@@ -101,6 +101,7 @@ if [ "$TKG_CLUSTER" == "no" ]; then
   # Install KApp Controller
   log "Installing KApp Controller"
   kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/$KAPP_RELEASE/release.yml --yes
+  kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml
 
   # Install SecretGen Controller
   log "Installing SecretGen Controller"
