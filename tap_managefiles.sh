@@ -47,6 +47,7 @@ function validatePasswords(){
 log "Reading password information"
 validatePasswords
 
+
 shopt -s nocasematch
 if [ "$DEPLOYMENT_MODEL" == "cluster" ]; then
     SERVICE_TYPE="LoadBalancer"
@@ -141,6 +142,14 @@ tap_gui:
       github:
         - host: github.com
           token: $GIT_ACCESS_TOKEN
+    proxy:
+      /metadata-store:
+        target: https://metadata-store-app.metadata-store:8443/api/v1
+        changeOrigin: true
+        secure: false
+        headers:
+          Authorization: "Bearer $STORE_ACCESS_TOKEN"
+          X-Custom-Source: project-star 
     auth:
       allowGuestAccess: true
       environment: development

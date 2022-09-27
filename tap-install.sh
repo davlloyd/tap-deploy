@@ -2,10 +2,10 @@
 
 
 # TAP Deployment Script
-# Currently tested with Beta 2
+# Currently tested with 1.3
 
 echo "Installing Tanzu Application Platform"
-echo "###"
+echo "######################################"
 
 
 #############################
@@ -24,8 +24,8 @@ function log() {
   echo "\n\xf0\x9f\x93\x9d     --> $*\n"
 }
 
-
 source tap.conf
+source tap_metastoreaccess.sh
 source tap_managefiles.sh
 
 
