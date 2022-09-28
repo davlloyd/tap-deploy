@@ -21,5 +21,4 @@ cert-manager-rbac.yml
 contour-rbac.yml
 pipeline-test.yaml
 imagepolicy-scan.yaml
-.vscode
 

@@ -42,6 +42,13 @@ function validatePasswords(){
     else
       log "No Git auth secret file defined so using GIT_AUTH_SECRET variable value"
     fi
+
+    if [[ -f "$DOC_BUCKET_CRED_FILE" ]]; then
+        log "Reading Storgae bucket credential file $DOC_BUCKET_CRED_FILE"
+        DOC_BUCKET_CRED=$(cat $DOC_BUCKET_CRED_FILE)
+    else
+      log "No Storage bucket credentials file so using DOC_BUCKET_CRED variable value"
+    fi
 }
 
 log "Reading password information"
@@ -163,6 +170,15 @@ tap_gui:
         github:
           title: Github Login
           message: Enter with your GitHub account
+    techdocs:
+      builder: 'external'
+      generators:
+        techdocs: 'docker'
+      publisher:
+        type: 'googleGcs'
+        googleGcs:
+          bucketName: $DOC_BUCKET
+          credentials: $DOC_BUCKET_CRED'
 
 
 metadata_store:
