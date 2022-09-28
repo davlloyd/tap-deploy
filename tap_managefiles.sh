@@ -133,7 +133,7 @@ tap_gui:
     catalog:
       locations:
         - type: url
-          target: $GIT_CATALOG_URL/catalog-info.yaml
+          target: $GIT_CATALOG_URL
     backend:
       baseUrl: http://tap-gui.$CUSTOM_DOMAIN
       cors:
