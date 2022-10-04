@@ -89,6 +89,9 @@ ootb_supply_chain_basic:
     server: "$REGISTRY_HOST"
     repository: "$REGISTRY_PROJECT/supply-chain"
   gitops:
+    gitops.server_address: $GITOPS_SERVER
+    gitops.repository_owner: $GITOPS_OWNER
+    gitops.repository_name: $GITOPS_REPO
     ssh_secret: ""
 
 ootb_supply_chain_testing:
@@ -97,6 +100,9 @@ ootb_supply_chain_testing:
     server: "$REGISTRY_HOST"
     repository: "$REGISTRY_PROJECT/supply-chain"
   gitops:
+    gitops.server_address: $GITOPS_SERVER
+    gitops.repository_owner: $GITOPS_OWNER
+    gitops.repository_name: $GITOPS_REPO
     ssh_secret: ""
 
 ootb_supply_chain_testing_scanning:
@@ -105,6 +111,9 @@ ootb_supply_chain_testing_scanning:
     server: "$REGISTRY_HOST"
     repository: "$REGISTRY_PROJECT/supply-chain"
   gitops:
+    gitops.server_address: $GITOPS_SERVER
+    gitops.repository_owner: $GITOPS_OWNER
+    gitops.repository_name: $GITOPS_REPO
     ssh_secret: ""
 
 
