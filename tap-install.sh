@@ -171,9 +171,6 @@ read -p "Press [Enter] key to continue"
 log "Install TAP"
 installPackage tap tap.tanzu.vmware.com $TAP_RELEASE tap-values.yml 60m
 
-log "Setup GUI demo account"
-kubectl -n $DEV_NAMESPACE apply -f tap-gui-account.yaml
-
 
 ### Set namesapce for developer access and application deployment
 log "Setup $DEV_NAMESPACE namespace for workloads"

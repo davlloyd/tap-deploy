@@ -117,7 +117,7 @@ log "K8s Version: $K8SVERSION"
 kubectl create namespace metadata-store --dry-run=client -o yaml | kubectl apply -f -
 
 log "Setting Metastore RO SA Account"
-if [ $((K8SVERSION))-ge 24 ]; then
+if [ $((K8SVERSION)) -ge 24 ]; then
   setMetastoreSAk8s24
 else
   setMetastoreSAk8s23
