@@ -38,5 +38,3 @@ else
   log "No namespace value provided"
 fi
 
-
-
