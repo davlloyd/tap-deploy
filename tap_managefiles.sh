@@ -195,7 +195,7 @@ accelerator:
 
 
 metadata_store:
-  ns_for_export_app_cert: "$DEV_NAMESPACE"
+  ns_for_export_app_cert: "*"
   app_service_type: $SERVICE_TYPE
   ingressDomain: "$CUSTOM_DOMAIN"
   ingress_enabled: "true"
@@ -207,7 +207,6 @@ scanning:
 
 grype:
   targetImagePullSecret: "registry-credentials"
-  namespace: "$DEV_NAMESPACE"
 
 
 learningcenter:

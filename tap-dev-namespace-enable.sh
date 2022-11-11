@@ -7,7 +7,8 @@ function log() {
 
 if [ -n "$1" ]; then
   source tap.conf
-  #source tap_managefiles.sh
+  source tap_managefiles.sh
+  STORE_ACCESS_TOKEN=$(kubectl get secret $(kubectl get sa -n metadata-store metadata-store-read-client -o json | jq -r '.secrets[0].name') -n metadata-store -o json | jq -r '.data.token' | base64 -d)
 
   DEV_NAMESPACE=$1
   ### Set namesapce for developer access and application deployment
@@ -20,15 +21,15 @@ if [ -n "$1" ]; then
 
   CHECK=$(kubectl get secret -n $DEV_NAMESPACE registry-credentials 2>&1)
   if [[ $CHECK == *"NotFound"* ]]; then
-      log "Creating new secret"
       tanzu secret registry add registry-credentials \
           --username $REGISTRY_ACCOUNT \
           --password "$REGISTRY_PASSWORD" \
           --server $REGISTRY_HOST \
-          -n $DEV_NAMESPACE
+          --namespace $DEV_NAMESPACE
   else
       log "Secret already exists"
   fi
+
 
 
   log "Set accounts and permissions"
