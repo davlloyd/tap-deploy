@@ -207,11 +207,10 @@ scanning:
 
 grype:
   targetImagePullSecret: "registry-credentials"
-
+  namespace: "*"
 
 learningcenter:
   ingressDomain: "learningcenter.$CUSTOM_DOMAIN"
-
 
 cnrs:
   domain_name: "apps.$CUSTOM_DOMAIN"
