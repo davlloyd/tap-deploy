@@ -138,21 +138,21 @@ tap_gui:
   ingressDomain: "$CUSTOM_DOMAIN"
   app_config:
     app:
-      baseUrl: http://tap-gui.$CUSTOM_DOMAIN
+      baseUrl: https://tap-gui.$CUSTOM_DOMAIN
     catalog:
       locations:
         - type: url
           target: $GIT_CATALOG_URL
       processors:
         appAccelerators:
-          target: http://acc-server.accelerator-system.svc.cluster.local/api/accelerators
+          target: https://acc-server.accelerator-system.svc.cluster.local/api/accelerators
     reading:
       allow:
       - host: acc-server.accelerator-system.svc.cluster.local
     backend:
-      baseUrl: http://tap-gui.$CUSTOM_DOMAIN
+      baseUrl: https://tap-gui.$CUSTOM_DOMAIN
       cors:
-        origin: http://tap-gui.$CUSTOM_DOMAIN
+        origin: https://tap-gui.$CUSTOM_DOMAIN
     integrations:
       github:
         - host: github.com
@@ -207,7 +207,6 @@ scanning:
 
 grype:
   targetImagePullSecret: "registry-credentials"
-  namespace: "*"
 
 learningcenter:
   ingressDomain: "learningcenter.$CUSTOM_DOMAIN"

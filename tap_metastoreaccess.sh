@@ -92,7 +92,7 @@ kind: ServiceAccount
 metadata:
   name: metadata-store-read-client
   namespace: metadata-store
-annotations:
+  annotations:
     kapp.k14s.io/change-group: "metadata-store.apps.tanzu.vmware.com/service-account"
 automountServiceAccountToken: false
 
@@ -102,9 +102,9 @@ apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
-    name: metadata-store-read-client
-    namespace: metadata-store
-annotations:
+  name: metadata-store-read-client
+  namespace: metadata-store
+  annotations:
     kapp.k14s.io/change-rule: "upsert after upserting metadata-store.apps.tanzu.vmware.com/service-account"
     kubernetes.io/service-account.name: "metadata-store-read-client"
 
