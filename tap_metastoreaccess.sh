@@ -18,11 +18,11 @@ function setMetastoreSAk8s23(){
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: metadata-store-ro
+  name: metadata-store-read-write
   namespace: metadata-store
 rules:
 - resources: ["all"]
-  verbs: ["get"]
+  verbs: ["get", "create", "update"]
   apiGroups: [ "metadata-store/v1" ]
 
 ---
@@ -30,15 +30,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: metadata-store-ro
+  name: metadata-store-read-write
   namespace: metadata-store
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: metadata-store-ro
+  name: metadata-store-read-write
 subjects:
 - kind: ServiceAccount
-  name: metadata-store-read-client
+  name: metadata-store-read-write-client
   namespace: metadata-store
 
 ---
@@ -46,8 +46,10 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: metadata-store-read-client
+  name: metadata-store-read-write-client
   namespace: metadata-store
+  annotations:
+    kapp.k14s.io/change-group: "metadata-store.apps.tanzu.vmware.com/service-account"
 automountServiceAccountToken: false
 
 
@@ -57,16 +59,16 @@ EOF
 # Setup metastore readonly serviceaccount for k8s version >=24
 function setMetastoreSAk8s24(){
     log "Setting SA for k8s releases 1.24 and after"
-kubectl apply -f - << EOF
 
+kubectl apply -f - -o yaml << EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: metadata-store-ro
+  name: metadata-store-read-write
   namespace: metadata-store
 rules:
 - resources: ["all"]
-  verbs: ["get"]
+  verbs: ["get", "create", "update"]
   apiGroups: [ "metadata-store/v1" ]
 
 ---
@@ -74,15 +76,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: metadata-store-ro
+  name: metadata-store-read-write
   namespace: metadata-store
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: metadata-store-ro
+  name: metadata-store-read-write
 subjects:
 - kind: ServiceAccount
-  name: metadata-store-read-client
+  name: metadata-store-read-write-client
   namespace: metadata-store
 
 ---
@@ -90,7 +92,7 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: metadata-store-read-client
+  name: metadata-store-read-write-client
   namespace: metadata-store
   annotations:
     kapp.k14s.io/change-group: "metadata-store.apps.tanzu.vmware.com/service-account"
@@ -102,11 +104,11 @@ apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
-  name: metadata-store-read-client
+  name: metadata-store-read-write-client
   namespace: metadata-store
   annotations:
     kapp.k14s.io/change-rule: "upsert after upserting metadata-store.apps.tanzu.vmware.com/service-account"
-    kubernetes.io/service-account.name: "metadata-store-read-client"
+    kubernetes.io/service-account.name: "metadata-store-read-write-client"
 
 EOF
 
@@ -119,9 +121,10 @@ kubectl create namespace metadata-store --dry-run=client -o yaml | kubectl apply
 log "Setting Metastore RO SA Account"
 if [ $((K8SVERSION)) -ge 24 ]; then
   setMetastoreSAk8s24
+  STORE_ACCESS_TOKEN=$(kubectl get secret metadata-store-read-write-client -n metadata-store -o json | jq -r '.data.token' | base64 -d)
 else
   setMetastoreSAk8s23
+  STORE_ACCESS_TOKEN=$(kubectl get secret $(kubectl get sa -n metadata-store metadata-store-read-write-client -o json | jq -r '.secrets[0].name') -n metadata-store -o json | jq -r '.data.token' | base64 -d)
 fi
 
-STORE_ACCESS_TOKEN=$(kubectl get secret $(kubectl get sa -n metadata-store metadata-store-read-client -o json | jq -r '.secrets[0].name') -n metadata-store -o json | jq -r '.data.token' | base64 -d)
 

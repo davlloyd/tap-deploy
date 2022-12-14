@@ -145,7 +145,7 @@ tap_gui:
           target: $GIT_CATALOG_URL
       processors:
         appAccelerators:
-          target: https://acc-server.accelerator-system.svc.cluster.local/api/accelerators
+          target: http://acc-server.accelerator-system.svc.cluster.local/api/accelerators
     reading:
       allow:
       - host: acc-server.accelerator-system.svc.cluster.local
