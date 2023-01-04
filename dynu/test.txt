@@ -1,0 +1,64 @@
+TEST_ZONE_NAME=tap1.tanzu.rocks. make test
+go test -v .
+
+
+
+kubectl create secret generic dynu-secret --from-literal=api-key='4TfVWX46cWbUV5e35VecdZTe52e66c54' -n cert-manager
+
+
+certbot -d '*.tap1.tanzu.rocks' --manual --preferred-challenges dns certonly
+
+kubectl apply -f - -o yaml << EOF
+
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: cert-manager-dynu-webhook
+  namespace: cert-manager
+  annotations:
+    kubernetes.io/service-account.name: "cert-manager-dynu-webhook"
+
+EOF
+
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-dynu-webhook:flowcontrol-solver
+  labels:
+    app: dynu-webhook
+    chart: dynu-webhook-0.1.1
+    release: cert-manager-dynu-webhook
+    heritage: helm
+rules:
+  - apiGroups:
+      - "flowcontrol.apiserver.k8s.io"
+    resources:
+      - 'prioritylevelconfigurations'
+      - 'flowschemas'
+    verbs:
+      - 'list'
+      - 'watch'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-dynu-webhook:flowcontrol-solver
+  labels:
+    app: dynu-webhook
+    chart: dynu-webhook-0.1.1
+    release: cert-manager-dynu-webhook
+    heritage: helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-dynu-webhook:flowcontrol-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: cert-manager-dynu-webhook
+    namespace: cert-manager
+---
