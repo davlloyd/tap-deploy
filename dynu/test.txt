@@ -3,7 +3,7 @@ go test -v .
 
 
 
-kubectl create secret generic dynu-secret --from-literal=api-key='4TfVWX46cWbUV5e35VecdZTe52e66c54' -n cert-manager
+kubectl create secret generic dynu-secret --from-literal=api-key='NFRmVldYNDZjV2JVVjVlMzVWZWNkWlRlNTJlNjZjNTQ=' -n cert-manager
 
 
 certbot -d '*.tap1.tanzu.rocks' --manual --preferred-challenges dns certonly
@@ -20,6 +20,7 @@ metadata:
     kubernetes.io/service-account.name: "cert-manager-dynu-webhook"
 
 EOF
+
 
 
 ---

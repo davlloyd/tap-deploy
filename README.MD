@@ -68,3 +68,4 @@ You can add more namespaces ready for workloads by the following steps
 3. Apply the Developer security artefect *dev-namespace-enable.yaml*
 4. Edit the App Live view configuration file *app-live-view-values* and update package woth the command:
     tanzu package installed update app-live-view appliveview.tanzu.vmware.com app-live-view-values.yaml
+

@@ -25,6 +25,7 @@ function log() {
 }
 
 source tap.conf
+source tap_managesettings.sh
 source tap_metastoreaccess.sh
 source tap_managefiles.sh
 
@@ -177,20 +178,22 @@ log "Setup $DEV_NAMESPACE namespace for workloads"
 
 log "Add internal registry credentials"
 
-CHECK=$(kubectl get secret -n $DEV_NAMESPACE registry-credentials 2>&1)
+CHECK=$(kubectl get secret -n tap-install registry-credentials 2>&1)
 if [[ $CHECK == *"NotFound"* ]]; then
     tanzu secret registry add registry-credentials \
         --username $REGISTRY_ACCOUNT \
         --password "$REGISTRY_PASSWORD" \
         --server $REGISTRY_HOST \
-        --namespace $DEV_NAMESPACE
+        --export-to-all-namespaces \
+        --namespace tap-install \
+        --yes 
 else
     log "Secret already exists"
 fi
 
 
-log "Set accounts and permissions"
-kubectl -n $DEV_NAMESPACE apply -f dev-namespace-enable.yaml
+log "Enabled namespace"
+kubectl label namespaces $DEV_NAMESPACE apps.tanzu.vmware.com/tap-ns=""
 
 
 # Finishing up

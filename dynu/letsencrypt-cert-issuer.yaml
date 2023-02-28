@@ -1,3 +1,11 @@
+apiVersion: v1
+data:
+  api-key: NFRmVldYNDZjV2JVVjVlMzVWZWNkWlRlNTJlNjZjNTQ=
+kind: Secret
+metadata:
+  name: dynu-secret
+  namespace: cert-manager
+type: Opaque
 
 ---
 
@@ -5,12 +13,11 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-dynu-tap
-  namespace: cert-manager
 spec:
   acme:
     # The ACME server URL
-    #server: https://acme-v02.api.letsencrypt.org/directory              # Use this for prod
-    server: https://acme-staging-v02.api.letsencrypt.org/directory    # Use this for staging/testing
+    server: https://acme-v02.api.letsencrypt.org/directory              # Use this for prod
+    #server: https://acme-staging-v02.api.letsencrypt.org/directory    # Use this for staging/testing
 
 
     # Email address used for ACME registration
@@ -27,6 +34,12 @@ spec:
             groupName: com.github.dopingus.cert-manager-webhook-dynu
             solverName: dynu
             config:
-              secretName: dynu-secret # Adjust this in case you changed the secretName
+              secretName: dynu-secret
+        selector:
+          dnsNames:
+          - '*.tap2.tanzu.rocks'
+      - http01:
+          ingress:
+            class: contour      
 
 ---
