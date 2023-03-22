@@ -60,7 +60,7 @@ EOF
 function setMetastoreSAk8s24(){
     log "Setting SA for k8s releases 1.24 and after"
 
-kubectl apply -f - -o yaml << EOF
+kubectl apply -f -  << EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -116,7 +116,7 @@ EOF
 
 K8SVERSION=$(kubectl version -o json | jq -r '.serverVersion.minor')
 log "K8s Version: $K8SVERSION"
-kubectl create namespace metadata-store --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace metadata-store --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
 log "Setting Metastore RO SA Account"
 if [ $((K8SVERSION)) -ge 24 ]; then

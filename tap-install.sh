@@ -2,7 +2,7 @@
 
 
 # TAP Deployment Script
-# Currently tested with 1.3
+# Currently tested with 1.4.2
 
 echo "Installing Tanzu Application Platform"
 echo "######################################"
@@ -13,7 +13,7 @@ echo "######################################"
 #############################
 
 #  1) Make sure cluster context is set to target cluster
-#  2) Make sure target cluster is running k8s version releases 1.19, 1.20 or 1.21
+#  2) Make sure target cluster is running k8s version releases 1.21 - 1.25
 #  3) Set your variables in the tap_env.sh. If password files not set then add values directly into the variables and keep the file varibales empty
 #  4) install Carvel cli tools https://github.com/vmware-tanzu/carvel-kapp/releases (v0.42.0 tested with this script)
 #  5) install Tanzu cli tool for your Mac/Linux machine https://github.com/pivotal/docs-tap/blob/main/install-general.md#prereqs (0.5.0 tested with this script)
@@ -58,6 +58,7 @@ function installPackage() {
     -n tap-install \
     --poll-timeout $timeout \
     ${values:+-f} $values \
+    > /dev/null 2>&1
 
   validateInstall $name
 }
@@ -101,12 +102,12 @@ if [ "$TKG_CLUSTER" == "no" ]; then
 
   # Install KApp Controller
   log "Installing KApp Controller"
-  kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/$KAPP_RELEASE/release.yml --yes
-  kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml --yes
+  kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/$KAPP_RELEASE/release.yml --yes > /dev/null 2>&1
+  kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml --yes > /dev/null 2>&1
 
   # Install SecretGen Controller
   log "Installing SecretGen Controller"
-  kapp deploy -a sg -f https://github.com/vmware-tanzu/carvel-secretgen-controller/releases/download/$SECRETGEN_RELEASE/release.yml --yes
+  kapp deploy -a sg -f https://github.com/vmware-tanzu/carvel-secretgen-controller/releases/download/$SECRETGEN_RELEASE/release.yml --yes > /dev/null 2>&1
 fi
 shopt -u nocasematch
 
@@ -117,10 +118,10 @@ log "Install TAP Packages"
 log "Setup for package deployment"
 
 # Set destination install namespace
-kubectl create namespace tap-install --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace tap-install --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
 # Set destination developer namespace
-kubectl create namespace $DEV_NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace $DEV_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
 # Add Pivnet access
 log "Add Pivnet registry credentials"
@@ -130,7 +131,7 @@ if [[ $CHECK == *"NotFound"* ]]; then
     tanzu secret registry add tap-registry \
         --username $PIVNET_ACCOUNT --password $PIVNET_PASSWORD \
         --server registry.tanzu.vmware.com \
-        --export-to-all-namespaces --namespace tap-install --yes
+        --export-to-all-namespaces --namespace tap-install --yes > /dev/null 2>&1
 else
     log "Secret already exists"
 fi
@@ -138,9 +139,9 @@ fi
 # Add TAP Image Repository
 log "Add TAP Image Repository"
 
-CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install | wc -l)
+CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install 2>&1 | wc -l)
 if [ $CHECK -gt 1 ]; then
-    tanzu package repository delete tanzu-tap-repository -n tap-install --yes
+    tanzu package repository delete tanzu-tap-repository -n tap-install --yes > /dev/null 2>&1
     while [ "$CHECK" -gt "1" ]
     do
       printf "."
@@ -151,7 +152,7 @@ fi
 
 tanzu package repository add tanzu-tap-repository \
     --url registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_RELEASE \
-    --namespace tap-install
+    --namespace tap-install  > /dev/null 2>&1
 
 log "Validate Available packages"
 CHECK=$(tanzu package available list --namespace tap-install | wc -l)

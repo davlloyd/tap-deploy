@@ -14,9 +14,9 @@ kind: Certificate
 metadata:
   name: tap-cert  # Replace with a name of your choice
 spec:
-  commonName: "*.tap2.tanzu.rocks" # Wildcard Entry for your domain
+  commonName: "*.tap1.tanzu.rocks" # Wildcard Entry for your domain
   dnsNames:
-    - "*.tap2.tanzu.rocks"
+    - "*.tap1.tanzu.rocks"
   issuerRef:
     name: letsencrypt-dynu-tap   # This should match the issuer you defined earlier
     kind: ClusterIssuer
