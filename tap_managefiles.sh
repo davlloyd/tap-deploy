@@ -38,10 +38,10 @@ buildservice:
   kp_default_repository_password: '$REGISTRY_PASSWORD'
   #extras start below
   #exclude_dependencies: false    # Need to add logic to do post update of full packages if set to true
-  descriptor_name: "$DESCRIPTOR_NAME"
-  enable_automatic_dependency_updates: true
-  tanzunet_username: "$PIVNET_ACCOUNT"
-  tanzunet_password: "$PIVNET_PASSWORD"
+  #descriptor_name: "$DESCRIPTOR_NAME"
+  #enable_automatic_dependency_updates: true
+  #tanzunet_username: "$PIVNET_ACCOUNT"
+  #tanzunet_password: "$PIVNET_PASSWORD"
 
 
 accelerator:
@@ -73,6 +73,8 @@ namespace_provisioner:
     - key: apps.tanzu.vmware.com/tap-ns
       operator: Exists
 
+policy:
+  tuf_enabled: false
 
 $SUPPLY_CHAIN_CONFIG:
   #cluster_builder: default
