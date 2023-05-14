@@ -177,7 +177,7 @@ cat >> "tap-values.yml" <<EOF
     namespace: $CERT_WILDCARD_NAMESPACE
     secretName: $CERT_WILDCARD_SECRET
 
-cnrs:
+cnrs:GIT_SSH_KEY_FILE
   domain_name: "apps.$CUSTOM_DOMAIN"
   default_tls_secret: $CERT_WILDCARD_NAMESPACE/$CERT_WILDCARD_SECRET
 
