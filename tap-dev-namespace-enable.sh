@@ -1,3 +1,7 @@
+#! /bin/sh
+
+
+# TAP Dev namespace enablement Script
 
 function log() {
   echo "\n\xf0\x9f\x93\x9d     --> $*\n"
@@ -30,8 +34,7 @@ if [ -n "$1" ]; then
           --username $REGISTRY_ACCOUNT \
           --password "$REGISTRY_PASSWORD" \
           --server $REGISTRY_HOST \
-          --export-to-all-namespaces \
-          --namespace tap-install \
+          --namespace $DEV_NAMESPACE \
           --yes 
   else
       log "Secret already exists"

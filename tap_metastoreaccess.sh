@@ -114,12 +114,13 @@ EOF
 
 }
 
-K8SVERSION=$(kubectl version -o json | jq -r '.serverVersion.minor')
-log "K8s Version: $K8SVERSION"
+K8SMAJORVERSION=$(kubectl version -o json | jq -r '.serverVersion.major')
+K8SMINORVERSION=$(kubectl version -o json | jq -r '.serverVersion.minor')
+log "K8s Version: $K8SMINORVERSION"
 kubectl create namespace metadata-store --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
 log "Setting Metastore RO SA Account"
-if [ $((K8SVERSION)) -ge 24 ]; then
+if [ $((K8SMINORVERSION)) -ge 24 ]; then
   setMetastoreSAk8s24
   STORE_ACCESS_TOKEN=$(kubectl get secret metadata-store-read-write-client -n metadata-store -o json | jq -r '.data.token' | base64 -d)
 else

@@ -28,7 +28,7 @@ source tap.conf
 source tap_managesettings.sh
 source tap_metastoreaccess.sh
 source tap_managefiles.sh
-
+source tap_manageaccess.sh
 
 function latestVersion() {
   tanzu package available list $1 -n tap-install -o json | jq -r 'sort_by(."released-at")[-1].version'
@@ -38,7 +38,7 @@ function installLatest() {
   local name=$1
   local package=$2
   local values=$3
-  local timeout=${4:-10m}
+  local timeout=${4:-20m}
 
 
   local version=$(latestVersion $package)
@@ -51,13 +51,13 @@ function installPackage() {
   local package=$2
   local version=$3
   local values=$4
-  local timeout=${5:-10m}
+  local timeout=${5:-20m}
 
   tanzu package install \
     $name -p $package -v $version \
+    --wait-timeout $timeout \
+    ${values:+--values-file} $values \
     -n tap-install \
-    --poll-timeout $timeout \
-    ${values:+-f} $values \
     > /dev/null 2>&1
 
   validateInstall $name
@@ -65,8 +65,8 @@ function installPackage() {
 
 
 function validateInstall(){
-    status=$(tanzu package installed get $1 -n tap-install)
-    if [[ $status == *"ReconcileSucceeded True"* ]]; then
+    status=$(tanzu package installed get $1 -n tap-install 2>&1)
+    if [[ $status == *"Reconcile succeeded"* ]]; then
       echo "Package $1 install succeeded \xE2\x9C\x94"
     else
       tanzu package installed get $1 -n tap-install
@@ -123,18 +123,6 @@ kubectl create namespace tap-install --dry-run=client -o yaml | kubectl apply -f
 # Set destination developer namespace
 kubectl create namespace $DEV_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
-# Add Pivnet access
-log "Add Pivnet registry credentials"
-
-CHECK=$(kubectl get secret -n tap-install tap-registry 2>&1)
-if [[ $CHECK == *"NotFound"* ]]; then
-    tanzu secret registry add tap-registry \
-        --username $PIVNET_ACCOUNT --password $PIVNET_PASSWORD \
-        --server registry.tanzu.vmware.com \
-        --export-to-all-namespaces --namespace tap-install --yes > /dev/null 2>&1
-else
-    log "Secret already exists"
-fi
 
 # Add TAP Image Repository
 log "Add TAP Image Repository"
@@ -145,7 +133,7 @@ if [ $CHECK -gt 1 ]; then
     while [ "$CHECK" -gt "1" ]
     do
       printf "."
-      CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install | wc -l)
+      CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install 2>&1 | wc -l)
       sleep 1
     done
 fi
@@ -174,23 +162,37 @@ log "Install TAP"
 installPackage tap tap.tanzu.vmware.com $TAP_RELEASE tap-values.yml 60m
 
 
+# add all build packs
+if [[ $TBS_FULL_DEPENDENCIES == "true" ]]; then
+  log "Install Full dependency buildpacks"
+
+  TBS_VERSION=$(latestVersion buildservice.tanzu.vmware.com)
+
+  tanzu package repository add tbs-full-deps-repository \
+    --url registry.tanzu.vmware.com/tanzu-application-platform/full-tbs-deps-package-repo:$TBS_VERSION \
+    --namespace tap-install > /dev/null 2>&1
+
+  installPackage full-tbs-deps full-tbs-deps.tanzu.vmware.com $TBS_VERSION
+fi
+
+
 ### Set namesapce for developer access and application deployment
 log "Setup $DEV_NAMESPACE namespace for workloads"
 
-log "Add internal registry credentials"
+# log "Add internal registry credentials"
 
-CHECK=$(kubectl get secret -n tap-install registry-credentials 2>&1)
-if [[ $CHECK == *"NotFound"* ]]; then
-    tanzu secret registry add registry-credentials \
-        --username $REGISTRY_ACCOUNT \
-        --password "$REGISTRY_PASSWORD" \
-        --server $REGISTRY_HOST \
-        --export-to-all-namespaces \
-        --namespace tap-install \
-        --yes 
-else
-    log "Secret already exists"
-fi
+# CHECK=$(kubectl get secret -n tap-install registry-credentials 2>&1)
+# if [[ $CHECK == *"NotFound"* ]]; then
+#     tanzu secret registry add registry-credentials \
+#         --username $REGISTRY_ACCOUNT \
+#         --password "$REGISTRY_PASSWORD" \
+#         --server $REGISTRY_HOST \
+#         --export-to-all-namespaces \
+#         --namespace tap-install \
+#         --yes 
+# else
+#     log "Secret already exists"
+# fi
 
 
 log "Enabled namespace"

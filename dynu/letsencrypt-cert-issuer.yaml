@@ -37,10 +37,7 @@ spec:
               secretName: dynu-secret
         selector:
           dnsNames:
-          - 'tap-gui.tap3.tanzu.rocks'
-          - '*.apps.tap3.tanzu.rocks'
-          - 'appliveview.view.tap3.tanzu.rocks'
-          - 'learningcenter.tap3.tanzu.rocks'
+          - '*.tap3.tanzu.rocks'
       - http01:
           ingress:
             class: contour      

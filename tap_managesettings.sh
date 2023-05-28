@@ -42,6 +42,14 @@ function validatePasswords(){
     else
       log "No Storage bucket credentials file so using DOC_BUCKET_CRED variable value"
     fi
+
+    if [[ -f "$GIT_SSH_KEY_FILE" ]]; then
+        log "Reading Git SSH key file $GIT_SSH_KEY_FILE"
+        GIT_SSH_KEY=$(cat $GIT_SSH_KEY_FILE)
+    else
+      log "No Git SSH Key file defined so using GIT_SSH_KEY variable"
+    fi
+
 }
 
 log "Reading password information"
