@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-access
+  annotations:
+    tekton.dev/git-0: https://github.com/
+type: kubernetes.io/basic-auth 
+stringData:
+  username: davlloyd
+  password: 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

@@ -57,3 +57,76 @@ else
   log "No namespace value provided"
 fi
 
+
+####
+log "Creating configuration file: dev-namespace-enable.yaml"
+cat > "dev-namespace-enable.yaml" <<EOF
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-access
+  annotations:
+    tekton.dev/git-0: $GITOPS_SERVER
+type: kubernetes.io/basic-auth 
+stringData:
+  username: $GITOPS_OWNER
+  password: $GIT_ACCESS_TOKEN
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tap-registry
+  annotations:
+    secretgen.carvel.dev/image-pull-secret: ""
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: e30K
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+secrets:
+  - name: registry-credentials
+  - name: git-access
+  - name: tap-registry
+imagePullSecrets:
+  - name: registry-credentials
+  - name: tap-registry
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-deliverable
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: deliverable
+subjects:
+  - kind: ServiceAccount
+    name: default
+    
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-permit-workload
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: workload
+subjects:
+  - kind: ServiceAccount
+    name: default
+
+---
+EOF

@@ -14,7 +14,7 @@
 # Setup metastore readonly serviceaccount for k8s version <=23 
 function setMetastoreSAk8s23(){
   log "Setting SA for k8s releases 1.23 and prior"
-    kubectl apply -f - << EOF
+    kubectl apply -f - << EOF > /dev/null 2>&1
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -52,15 +52,14 @@ metadata:
     kapp.k14s.io/change-group: "metadata-store.apps.tanzu.vmware.com/service-account"
 automountServiceAccountToken: false
 
-
 EOF
-}
+} 
 
 # Setup metastore readonly serviceaccount for k8s version >=24
 function setMetastoreSAk8s24(){
     log "Setting SA for k8s releases 1.24 and after"
 
-kubectl apply -f -  << EOF
+kubectl apply -f -  << EOF > /dev/null 2>&1
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:

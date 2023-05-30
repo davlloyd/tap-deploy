@@ -28,7 +28,6 @@ source tap.conf
 source tap_managesettings.sh
 source tap_metastoreaccess.sh
 source tap_managefiles.sh
-source tap_manageaccess.sh
 
 function latestVersion() {
   tanzu package available list $1 -n tap-install -o json | jq -r 'sort_by(."released-at")[-1].version'
@@ -111,6 +110,8 @@ if [ "$TKG_CLUSTER" == "no" ]; then
 fi
 shopt -u nocasematch
 
+# Set security access to supporting services
+source tap_manageaccess.sh
 
 # Installing TAP packages
 log "Install TAP Packages"
@@ -178,21 +179,6 @@ fi
 
 ### Set namesapce for developer access and application deployment
 log "Setup $DEV_NAMESPACE namespace for workloads"
-
-# log "Add internal registry credentials"
-
-# CHECK=$(kubectl get secret -n tap-install registry-credentials 2>&1)
-# if [[ $CHECK == *"NotFound"* ]]; then
-#     tanzu secret registry add registry-credentials \
-#         --username $REGISTRY_ACCOUNT \
-#         --password "$REGISTRY_PASSWORD" \
-#         --server $REGISTRY_HOST \
-#         --export-to-all-namespaces \
-#         --namespace tap-install \
-#         --yes 
-# else
-#     log "Secret already exists"
-# fi
 
 
 log "Enabled namespace"
