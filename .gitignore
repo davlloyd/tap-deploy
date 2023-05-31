@@ -21,4 +21,5 @@ contour-rbac.yml
 pipeline-test.yaml
 imagepolicy-scan.yaml
 dynu/*
-
+tap-*.conf
+null

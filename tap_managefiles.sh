@@ -175,6 +175,7 @@ namespace_provisioner:
       ref: origin/main
       subPath: $GITOPS_NS_REPO_FOLDER_CREDENTIALS
       url: $GITOPS_SERVER$GITOPS_OWNER/$GITOPS_NS_REPO.git
+    path: _ytt_lib/$GITOPS_NS_REPO_FOLDER_CREDENTIALS-setup
   gitops_install:
     ref: origin/main
     subPath: $GITOPS_NS_REPO_FOLDER_PROVISION
@@ -199,7 +200,7 @@ $SUPPLY_CHAIN_CONFIG:
     server_address: $GITOPS_SERVER
     repository_owner: $GITOPS_OWNER
     repository_name: $GITOPS_REPO
-    ssh_secret: "git-access"
+    ssh_secret: "git"
     branch: main
     commit_strategy: $GIT_COMMIT_STRATEGY
     pull_request:

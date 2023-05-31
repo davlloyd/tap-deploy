@@ -19,6 +19,9 @@ echo "######################################"
 #  5) install Tanzu cli tool for your Mac/Linux machine https://github.com/pivotal/docs-tap/blob/main/install-general.md#prereqs (0.5.0 tested with this script)
 
 
+# Set destination install namespace
+kubectl create namespace tap-install --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
+
 
 function log() {
   echo "\n\xf0\x9f\x93\x9d     --> $*\n"
@@ -118,27 +121,27 @@ log "Install TAP Packages"
 
 log "Setup for package deployment"
 
-# Set destination install namespace
-kubectl create namespace tap-install --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
-
 # Set destination developer namespace
 kubectl create namespace $DEV_NAMESPACE --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
 
 # Add TAP Image Repository
-log "Add TAP Image Repository"
+log "Managing TAP Image Repository"
 
+log "Check if TAP Image Repository already exists"
 CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install 2>&1 | wc -l)
 if [ $CHECK -gt 1 ]; then
+  log "TAP Image Repository already exists so removing it"
+  while [ "$CHECK" -gt "1" ]
+  do
     tanzu package repository delete tanzu-tap-repository -n tap-install --yes > /dev/null 2>&1
-    while [ "$CHECK" -gt "1" ]
-    do
-      printf "."
-      CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install 2>&1 | wc -l)
-      sleep 1
-    done
+    printf "."
+    CHECK=$(tanzu package repository get tanzu-tap-repository -n tap-install 2>&1 | wc -l)
+    sleep 1
+  done
 fi
 
+log "Adding TAP Image Repository"
 tanzu package repository add tanzu-tap-repository \
     --url registry.tanzu.vmware.com/tanzu-application-platform/tap-packages:$TAP_RELEASE \
     --namespace tap-install  > /dev/null 2>&1
