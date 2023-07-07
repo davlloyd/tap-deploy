@@ -170,13 +170,15 @@ installPackage tap tap.tanzu.vmware.com $TAP_RELEASE tap-values.yml 60m
 if [[ $TBS_FULL_DEPENDENCIES == "true" ]]; then
   log "Install Full dependency buildpacks"
 
-  TBS_VERSION=$(latestVersion buildservice.tanzu.vmware.com)
+  #TBS_VERSION=$(latestVersion buildservice.tanzu.vmware.com)
 
-  tanzu package repository add tbs-full-deps-repository \
-    --url registry.tanzu.vmware.com/tanzu-application-platform/full-tbs-deps-package-repo:$TBS_VERSION \
+  tanzu package repository add full-deps-repository \
+    --url registry.tanzu.vmware.com/tanzu-application-platform/full-deps-package-repo:$TAP_RELEASE \
     --namespace tap-install > /dev/null 2>&1
 
-  installPackage full-tbs-deps full-tbs-deps.tanzu.vmware.com $TBS_VERSION
+
+
+  installPackage full-deps-repository full-deps.buildservice.tanzu.vmware.com "> 0.0.0"
 fi
 
 

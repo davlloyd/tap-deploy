@@ -2,15 +2,15 @@
 
 This script is focused on simplifying the deployment of [Tanzu Application Platform](https://tanzu.vmware.com/application-platform)
 
-Current Release:    TAP Beta 2
+Current Release:    TAP 1.5.1
 Tested Platforms:   GKE
 Source Laptop:      MacOS
 
 ## Step 1: Setup Cluster
 I have been using GKE as detailed below but k8s services comprised as:
 
-- local (kind), TKG 1.4+, GKE, AKS, EKS cluster
-- Version support is 1.19, 1.20 and 1.21 
+- local (kind), TKG 2.1+, GKE, AKS, EKS cluster
+- Version support is 1.23, 1.24 and 1.25 
 - Network policies enabled
 
 Also ensure the cluster context is set to target cluster

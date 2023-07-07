@@ -22,4 +22,5 @@ pipeline-test.yaml
 imagepolicy-scan.yaml
 dynu/*
 tap-*.conf
+tap-*.yml
 null
