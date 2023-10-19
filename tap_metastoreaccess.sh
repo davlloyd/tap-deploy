@@ -113,9 +113,6 @@ EOF
 
 }
 
-K8SMAJORVERSION=$(kubectl version -o json | jq -r '.serverVersion.major')
-K8SMINORVERSION=$(kubectl version -o json | jq -r '.serverVersion.minor')
-log "K8s Version: $K8SMINORVERSION"
 kubectl create namespace metadata-store --dry-run=client -o yaml | kubectl apply -f - > /dev/null 2>&1
 
 log "Setting Metastore RO SA Account"

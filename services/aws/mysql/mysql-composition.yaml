@@ -1,0 +1,93 @@
+
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  labels:
+    provider: "aws"
+  name: xmysqlinstances.database.rds.apa.org
+spec:
+  compositeTypeRef:
+    apiVersion: database.rds.apa.org/v1alpha1
+    kind: XMySQLInstance
+  publishConnectionDetailsWithStoreConfigRef:
+    name: default
+  resources:
+  - base:
+      apiVersion: rds.aws.upbound.io/v1beta1
+      kind: Instance
+      spec:
+        forProvider:
+          instanceClass: db.t3.micro
+          autoGeneratePassword: true
+          passwordSecretRef:
+            key: password
+            namespace: crossplane-system
+          engine: mysql
+          engineVersion: "8.0.34"
+          name: demodb
+          allocatedStorage: 20
+          username: dbuser
+          publiclyAccessible: true
+          region: ap-southeast-2
+          skipFinalSnapshot: true
+          dbSecurityGroups: [default]
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    connectionDetails:
+    - name: type
+      value: mysql
+    - name: provider
+      value: aws
+    - name: database
+      value: mysql
+    - fromConnectionSecretKey: username
+    - fromConnectionSecretKey: password
+    - name: host
+      fromConnectionSecretKey: endpoint
+    - fromConnectionSecretKey: port
+    name: instance
+    patches:
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.forProvider.passwordSecretRef.name
+      transforms:
+      - string:
+          fmt: '%s-mysql-pw'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.writeConnectionSecretToRef.name
+      transforms:
+      - string:
+          fmt: '%s-mysql'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: spec.storageGB
+      toFieldPath: spec.forProvider.allocatedStorage
+    - fromFieldPath: spec.schemaName
+      toFieldPath: spec.forProvider.name
+    - fromFieldPath: spec.publiclyAccessible
+      toFieldPath: spec.forProvider.publiclyAccessible
+      transforms:
+      - type: convert
+        convert:
+          toType: bool
+    - fromFieldPath: spec.region
+      toFieldPath: spec.forProvider.region
+      transforms:
+      - type: map
+        map:
+          sydney: ap-southeast-2
+          singapore: ap-southeast-1
+    - fromFieldPath: spec.size
+      toFieldPath: spec.forProvider.instanceClass
+      transforms:
+      - type: map
+        map:
+          micro: db.t2.micro
+          small: db.t2.small
+          medium: db.t2.medium
+          large: db.t2.large
+      

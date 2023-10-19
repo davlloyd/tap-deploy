@@ -37,7 +37,7 @@ spec:
               secretName: dynu-secret
         selector:
           dnsNames:
-          - '*.tap1.tanzu.rocks'
+          - '*.tap2.tanzu.rocks'
       - http01:
           ingress:
             class: contour      

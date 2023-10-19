@@ -52,25 +52,26 @@ accelerator:
 metadata_store:
   ns_for_export_app_cert: "*"
   app_service_type: $SERVICE_TYPE
-  ingressDomain: "$CUSTOM_DOMAIN"
-  ingress_enabled: "true"
+  #ingressDomain: "$CUSTOM_DOMAIN"
+  #ingress_enabled: "true"
 
 
 scanning:
-  metadataStore:
-    url: ""
+  #metadataStore:
+  #  url: ""
 
 grype:
   targetImagePullSecret: "registry-credentials"
 
-learningcenter:
-  ingressDomain: "learningcenter.$CUSTOM_DOMAIN"
+#learningcenter:
+#  ingressDomain: "learningcenter.$CUSTOM_DOMAIN"
 
 policy:
   tuf_enabled: false
 
   
 tap_gui:
+  metadataStoreAutoconfiguration: true
   service_type: "$SERVICE_TYPE"
   ingressEnabled: "true"
   ingressDomain: "$CUSTOM_DOMAIN"
@@ -95,14 +96,14 @@ tap_gui:
       github:
         - host: github.com
           token: $GIT_ACCESS_TOKEN
-    proxy:
-      /metadata-store:
-        target: https://metadata-store-app.metadata-store:8443/api/v1
-        changeOrigin: true
-        secure: false
-        headers:
-          Authorization: "Bearer $STORE_ACCESS_TOKEN"
-          X-Custom-Source: project-star 
+    #proxy:
+    #  /metadata-store:
+    #    target: https://metadata-store-app.metadata-store:8443/api/v1
+    #    changeOrigin: true
+    #    secure: false
+    #    headers:
+    #      Authorization: "Bearer $STORE_ACCESS_TOKEN"
+    #      X-Custom-Source: project-star 
     auth:
       allowGuestAccess: true
       environment: development
@@ -190,8 +191,6 @@ namespace_provisioner:
     create_export: true
 
 $SUPPLY_CHAIN_CONFIG:
-  gitops:
-    ssh_secret: git
   #cluster_builder: default
   registry:
     server: "$REGISTRY_HOST"

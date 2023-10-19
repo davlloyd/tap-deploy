@@ -27,9 +27,13 @@ function log() {
   echo "\n\xf0\x9f\x93\x9d     --> $*\n"
 }
 
+K8SMAJORVERSION=$(kubectl version -o json | jq -r '.serverVersion.major')
+K8SMINORVERSION=$(kubectl version -o json | jq -r '.serverVersion.minor')
+log "K8s Version: $K8SMINORVERSION"
+
 source tap.conf
 source tap_managesettings.sh
-source tap_metastoreaccess.sh
+#source tap_metastoreaccess.sh
 source tap_managefiles.sh
 
 function latestVersion() {
@@ -71,6 +75,21 @@ function validateInstall(){
     if [[ $status == *"Reconcile succeeded"* ]]; then
       echo "Package $1 install succeeded \xE2\x9C\x94"
     else
+      counter=0
+      while [[ $status == *"waiting on reconcile"* ]] || [[ $status == *"Reconciling"* ]]; do
+        sleep 5
+        printf .
+        let counter++
+        status=$(tanzu package installed get $1 -n tap-install 2>&1)
+        if [[ $status == *"Reconcile succeeded"* ]]; then
+          echo "Package $1 install succeeded \xE2\x9C\x94"
+          return 1;
+        else
+          if [ $counter -gt 360 ]; then
+            break
+          fi
+        fi
+      done
       tanzu package installed get $1 -n tap-install
       echo "Package $1 install failed \xE2\x9D\x8C"
       if promptyn "Do you want to continue (Y/N)?"; then
@@ -170,17 +189,12 @@ installPackage tap tap.tanzu.vmware.com $TAP_RELEASE tap-values.yml 60m
 if [[ $TBS_FULL_DEPENDENCIES == "true" ]]; then
   log "Install Full dependency buildpacks"
 
-  #TBS_VERSION=$(latestVersion buildservice.tanzu.vmware.com)
-
-  tanzu package repository add full-deps-repository \
+  tanzu package repository add full-deps-package-repo \
     --url registry.tanzu.vmware.com/tanzu-application-platform/full-deps-package-repo:$TAP_RELEASE \
     --namespace tap-install > /dev/null 2>&1
 
-
-
-  installPackage full-deps-repository full-deps.buildservice.tanzu.vmware.com "> 0.0.0"
+  installPackage full-deps full-deps.buildservice.tanzu.vmware.com "> 0.0.0"
 fi
-
 
 ### Set namesapce for developer access and application deployment
 log "Setup $DEV_NAMESPACE namespace for workloads"

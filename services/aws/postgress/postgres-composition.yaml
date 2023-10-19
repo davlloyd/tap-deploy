@@ -1,0 +1,71 @@
+# xpostgresqlinstances.database.rds.example.org.composition.yaml
+
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  labels:
+    provider: "aws"
+    vpc: "aws-syd-manager-1-vpc"
+  name: xpostgresqlinstances.database.rds.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: database.rds.example.org/v1alpha1
+    kind: XPostgreSQLInstance
+  publishConnectionDetailsWithStoreConfigRef:
+    name: default
+  resources:
+  - base:
+      apiVersion: rds.aws.upbound.io/v1beta1
+      kind: Instance
+      spec:
+        forProvider:
+          # NOTE: configure this section to your specific requirements
+          instanceClass: db.t3.micro
+          autoGeneratePassword: true
+          passwordSecretRef:
+            key: password
+            namespace: crossplane-system
+          engine: postgres
+          engineVersion: "13.7"
+          name: postgres
+          username: masteruser
+          publiclyAccessible: true                # <---- DANGER
+          region: ap-southeast-2
+          skipFinalSnapshot: true
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    connectionDetails:
+    - name: type
+      value: postgresql
+    - name: provider
+      value: aws
+    - name: database
+      value: postgres
+    - fromConnectionSecretKey: username
+    - fromConnectionSecretKey: password
+    - name: host
+      fromConnectionSecretKey: endpoint
+    - fromConnectionSecretKey: port
+    name: instance
+    patches:
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.forProvider.passwordSecretRef.name
+      transforms:
+      - string:
+          fmt: '%s-postgresql-pw'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.writeConnectionSecretToRef.name
+      transforms:
+      - string:
+          fmt: '%s-postgresql'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: spec.storageGB
+      toFieldPath: spec.forProvider.allocatedStorage
+      type: FromCompositeFieldPath
+      
