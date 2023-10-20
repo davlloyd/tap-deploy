@@ -27,11 +27,12 @@ spec:
           engineVersion: "8.0.34"
           name: demodb
           allocatedStorage: 20
-          username: dbuser
+          username: dbadmin
           publiclyAccessible: true
           region: ap-southeast-2
           skipFinalSnapshot: true
-          dbSecurityGroups: [default]
+          dbSecurityGroups: [sg_mysql_allow]
+          dbSubnetGroupName: dbsn_dataservices
         writeConnectionSecretToRef:
           namespace: crossplane-system
     connectionDetails:

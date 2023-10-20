@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -eE
 
-read -p "AWS access_key_id: " aws_access_key; read -sp "AWS secret_access_key: " aws_secret_key; read -sp "AWS session_token: " aws_access_token; export AWS_KEY=$aws_access_key; export AWS_SECRET=$aws_secret_key; export AWS_TOKEN=$aws_access_token ; printf "\n"
+read -p "AWS access_key_id: " aws_access_key;
+read -p "AWS secret_access_key: " -s aws_secret_key; 
+echo "/n"
+read -p "AWS session_token: " aws_access_token; 
+export AWS_KEY=$aws_access_key;
+export AWS_SECRET=$aws_secret_key;
+export AWS_TOKEN=$aws_access_token;
+
 
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
