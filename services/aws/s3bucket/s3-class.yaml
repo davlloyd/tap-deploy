@@ -1,0 +1,12 @@
+
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: aws-s3-bucket
+spec:
+  description:
+    short: Amazon AWS S3 Bucket
+  provisioner:
+    crossplane:
+      compositeResourceDefinition: xbuckets.s3.aws.apa.org

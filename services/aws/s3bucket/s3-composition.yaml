@@ -1,0 +1,29 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  labels:
+    vpc: dbsn_dataservices
+    provider: "aws"
+  name: xbucket.s3.aws.apa.org
+spec:
+  compositeTypeRef:
+    apiVersion: s3.aws.apa.org/v1alpha1
+    kind: XBucket
+  publishConnectionDetailsWithStoreConfigRef:
+    name: default
+  resources:
+  - base:
+      name: s3-bucket
+      apiVersion: s3.aws.upbound.io/v1beta1
+      kind: Bucket
+      spec:
+        forProvider:
+          region: ap-southeast-2
+    patches:
+    - fromFieldPath: spec.region
+      toFieldPath: spec.forProvider.region
+      transforms:
+      - type: map
+        map:
+          sydney: ap-southeast-2
+          singapore: ap-southeast-1

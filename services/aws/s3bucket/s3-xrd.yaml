@@ -1,12 +1,12 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: nosqls.database.example.com
+  name: xbuckets.s3.aws.apa.org
 spec:
-  group: database.example.com
+  group: s3.aws.apa.org
   names:
-    kind: NoSQL
-    plural: nosqls
+    kind: XBucket
+    plural: xbuckets
   versions:
   - name: v1alpha1
     schema:
@@ -16,16 +16,19 @@ spec:
           spec:
             type: object
             properties:
-              location:
+              region:
                 type: string
-                oneOf:
-                  - pattern: '^EU$'
-                  - pattern: '^US$'
+                enum:
+                  - sydney
+                  - singapore
+                description: |
+                  Region where DB instance will be deployed
+                default: sydney
             required:
-              - location
+              - region
     served: true
     referenceable: true
   claimNames:
-    kind: NoSQLClaim
-    plural: nosqlclaim
+    kind: Bucket
+    plural: buckets
     
