@@ -2,11 +2,11 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xmysqlinstances.database.rds.apa.org
+  name: xrdsinstances.database.rds.apa.org
 spec:
   claimNames:
-    kind: MySQLInstance
-    plural: mysqlinstances
+    kind: RDSInstance
+    plural: rdsinstances
   connectionSecretKeys:
   - type
   - provider
@@ -17,8 +17,8 @@ spec:
   - password
   group: database.rds.apa.org
   names:
-    kind: XMySQLInstance
-    plural: xmysqlinstances
+    kind: XRDSInstance
+    plural: xrdsinstances
   versions:
   - name: v1alpha1
     referenceable: true
@@ -27,18 +27,18 @@ spec:
         properties:
           spec:
             description: |
-              This specification defines how a MySQLInstance is deployed
+              This specification defines how an RDS Instance is deployed
             properties:
               storageGB:
                 type: integer
                 default: 20
                 description: |
                   Size in GB of storage space to assign to DB instance
-              schemaName:
+              dbName:
                 type: string
-                default: defaultSchema
+                default: mydb
                 description: |
-                  Name to assign to the default schema created in the instance
+                  Name to assign to the default database created in the instance
               region:
                 type: string
                 enum:
@@ -62,6 +62,12 @@ spec:
                 default: 'true'
                 description: |
                   Defines if the DB instances will be assigned a public DNS and IP address
+              dbType:
+                type: string
+                default: mysql
+                enum:
+                 - mysql
+                 - postgres
             type: object
         type: object
     served: true

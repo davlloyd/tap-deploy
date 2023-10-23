@@ -1,0 +1,13 @@
+# rds.class.yaml
+
+---
+apiVersion: services.apps.tanzu.vmware.com/v1alpha1
+kind: ClusterInstanceClass
+metadata:
+  name: aws-rds-db
+spec:
+  description:
+    short: Amazon AWS RDS DB
+  provisioner:
+    crossplane:
+      compositeResourceDefinition: xrdsinstances.database.rds.apa.org

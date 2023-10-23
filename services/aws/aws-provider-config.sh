@@ -3,7 +3,7 @@ set -eE
 
 read -p "AWS access_key_id: " aws_access_key;
 read -p "AWS secret_access_key: " -s aws_secret_key; 
-echo "/n"
+echo " "
 read -p "AWS session_token: " aws_access_token; 
 export AWS_KEY=$aws_access_key;
 export AWS_SECRET=$aws_secret_key;

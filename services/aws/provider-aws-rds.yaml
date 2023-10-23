@@ -7,26 +7,26 @@
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
-  name: upbound-provider-family-aws
+  name: provider-family-aws
 spec:
-  package: xpkg.upbound.io/upbound/provider-family-aws:v0.36.0
+  package: xpkg.upbound.io/upbound/provider-family-aws:v0.42.0
   controllerConfigRef:
-    name: upbound-provider-family-aws
+    name: provider-aws-controller-config
 ---
 # The AWS RDS Provider - just one of the many Providers in the AWS family.
 # You can add as few or as many additional Providers in the same family as you wish.
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
-  name: upbound-provider-aws-rds
+  name: provider-aws-rds-config
 spec:
-  package: xpkg.upbound.io/upbound/provider-aws-rds:v0.36.0
+  package: xpkg.upbound.io/upbound/provider-aws-rds:v0.42.0
   controllerConfigRef:
-    name: upbound-provider-family-aws
+    name: provider-aws-controller-config
 ---
 # The ControllerConfig applies settings to a Provider Pod.
 # With family Providers each Provider is a unique Pod running in the cluster.
 apiVersion: pkg.crossplane.io/v1alpha1
 kind: ControllerConfig
 metadata:
-  name: upbound-provider-family-aws
+  name: provider-aws-controller-config

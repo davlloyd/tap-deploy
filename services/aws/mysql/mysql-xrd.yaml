@@ -1,0 +1,76 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xmysqlinstances.database.rds.apa.org
+spec:
+  claimNames:
+    kind: MySQLInstance
+    plural: mysqlinstances
+  connectionSecretKeys:
+  - type
+  - provider
+  - host
+  - port
+  - database
+  - username
+  - password
+  group: database.rds.apa.org
+  names:
+    kind: XMySQLInstance
+    plural: xmysqlinstances
+  versions:
+  - name: v1alpha1
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: |
+              This specification defines how a MySQLInstance is deployed
+            properties:
+              storageGB:
+                type: integer
+                default: 20
+                description: |
+                  Size in GB of storage space to assign to DB instance
+              schemaName:
+                type: string
+                default: defaultSchema
+                description: |
+                  Name to assign to the default schema created in the instance
+              region:
+                type: string
+                enum:
+                  - sydney
+                  - singapore
+                description: |
+                  Region where DB instance will be deployed
+                default: sydney
+              size:
+                type: string
+                enum:
+                  - micro
+                  - small
+                  - medium
+                  - large
+                description: |
+                  Machine size for the DB instance
+                default: micro
+              publiclyAccessible:
+                type: string
+                default: 'true'
+                description: |
+                  Defines if the DB instances will be assigned a public DNS and IP address
+              dbType:
+                type: string
+                default: mysql
+                enum:
+                 - mysql
+                 - postgresql
+                 - mongodb
+            type: object
+        type: object
+    served: true
+
+                

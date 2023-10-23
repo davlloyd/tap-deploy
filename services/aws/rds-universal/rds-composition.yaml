@@ -6,11 +6,11 @@ metadata:
   labels:
     vpc: dbsn_dataservices
     provider: "aws"
-  name: xmysqlinstances.database.rds.apa.org
+  name: xrdsinstances.database.rds.apa.org
 spec:
   compositeTypeRef:
     apiVersion: database.rds.apa.org/v1alpha1
-    kind: XMySQLInstance
+    kind: XRDSInstance
   publishConnectionDetailsWithStoreConfigRef:
     name: default
   resources:
@@ -25,26 +25,27 @@ spec:
             key: password
             namespace: crossplane-system
           engine: mysql
+          dbName: firstdb
           engineVersion: "8.0.34"
-          name: demodb
           allocatedStorage: 20
           username: dbadmin
           publiclyAccessible: true
           region: ap-southeast-2
           skipFinalSnapshot: true
+          vpcSecurityGroupIds: [sg-07ebdf8570e72e4e8,sg-0647c59f867d018ed]
           dbSubnetGroupName: dbsn_dataservices
-          vpcSecurityGroupIDRefs:
-            - name: default
-            - name: sg_mysql_allow
+          tags:
+            owner: "apa"
+            service: "unset"     
         writeConnectionSecretToRef:
           namespace: crossplane-system
     connectionDetails:
-    - name: type
-      value: mysql
     - name: provider
       value: aws
+    - name: type
+      fromFieldPath: spec.forProvider.engine
     - name: database
-      value: mysql
+      fromFieldPath: spec.forProvider.dbName
     - fromConnectionSecretKey: username
     - fromConnectionSecretKey: password
     - name: host
@@ -56,7 +57,7 @@ spec:
       toFieldPath: spec.forProvider.passwordSecretRef.name
       transforms:
       - string:
-          fmt: '%s-mysql-pw'
+          fmt: '%s-rds-pw'
           type: Format
         type: string
       type: FromCompositeFieldPath
@@ -64,14 +65,14 @@ spec:
       toFieldPath: spec.writeConnectionSecretToRef.name
       transforms:
       - string:
-          fmt: '%s-mysql'
+          fmt: '%s-rds'
           type: Format
         type: string
       type: FromCompositeFieldPath
     - fromFieldPath: spec.storageGB
       toFieldPath: spec.forProvider.allocatedStorage
-    - fromFieldPath: spec.schemaName
-      toFieldPath: spec.forProvider.name
+    - fromFieldPath: spec.dbName
+      toFieldPath: spec.forProvider.dbName
     - fromFieldPath: spec.publiclyAccessible
       toFieldPath: spec.forProvider.publiclyAccessible
       transforms:
@@ -90,8 +91,54 @@ spec:
       transforms:
       - type: map
         map:
-          micro: db.t2.micro
-          small: db.t2.small
-          medium: db.t2.medium
-          large: db.t2.large
-      
+          micro: db.t3.micro
+          small: db.t3.small
+          medium: db.t3.medium
+          large: db.t3.large
+    - fromFieldPath: spec.dbType
+      toFieldPath: spec.forProvider.engine
+      transforms:
+      - type: map
+        map:
+          mysql: mysql
+          postgres: postgres
+    - fromFieldPath: spec.dbType
+      toFieldPath: spec.forProvider.engineVersion
+      transforms:
+      - type: map
+        map:
+          mysql: '8.0.34'
+          postgres: '13.7'
+    - fromFieldPath: spec.region
+      toFieldPath: spec.forProvider.vpcSecurityGroupIds
+      transforms:
+      - type: map
+        map:
+          sydney: [sg-07ebdf8570e72e4e8,sg-088b39db3d9664b41]
+          singapore: [sg-0c5c3d3010f37b05e,sg-005170f9abcc76e33]    
+    - fromFieldPath: "spec.dbType"
+      toFieldPath: "spec.writeConnectionSecretToRef.type"
+      transforms:
+      - type: map
+        map:
+          mysql: "mysql"
+          postgres: "postgres"
+    - type: CombineFromComposite
+      combine:
+        variables:
+          - fromFieldPath: spec.region
+          - fromFieldPath: spec.dbType
+        strategy: string
+        string:
+          fmt: "%s-%s"
+      toFieldPath: spec.forProvider.tags['service']
+    - fromFieldPath: spec.forProvider.tags['service']
+      toFieldPath: spec.forProvider.vpcSecurityGroupIds
+      type: FromCompositeFieldPath
+      transforms:
+      - type: map
+        map:
+          sydney-mysql: [sg-07ebdf8570e72e4e8,sg-0647c59f867d018ed]
+          sydney-postgres: [sg-07ebdf8570e72e4e8,sg-0d6bd77db201af85fa]
+          singapore-mysql: [sg-0c5c3d3010f37b05e,sg-0a339b1c60c948327]
+          singapore-postgres: [sg-0c5c3d3010f37b05e,sg-0882f511ebb5a4c0a]    
