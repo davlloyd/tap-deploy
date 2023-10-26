@@ -1,9 +1,8 @@
 # provider-family-aws.yaml
 
 ---
-# The AWS "family" Provider - manages the ProviderConfig for all other Providers in the same family.
-# Does not have to be created explicitly, if not created explicitly it will be installed by the first Provider created
-# in the family.
+
+# The AWS "family" Provider
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
@@ -12,9 +11,10 @@ spec:
   package: xpkg.upbound.io/upbound/provider-family-aws:v0.42.0
   controllerConfigRef:
     name: provider-aws-controller-config
+
 ---
-# The AWS RDS Provider - just one of the many Providers in the AWS family.
-# You can add as few or as many additional Providers in the same family as you wish.
+
+# The AWS RDS Provider
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
@@ -23,9 +23,21 @@ spec:
   package: xpkg.upbound.io/upbound/provider-aws-rds:v0.42.0
   controllerConfigRef:
     name: provider-aws-controller-config
+
 ---
-# The ControllerConfig applies settings to a Provider Pod.
-# With family Providers each Provider is a unique Pod running in the cluster.
+
+# The AWS S3 Provider
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-aws-s3-config
+spec:
+  package: xpkg.upbound.io/upbound/provider-aws-s3:v0.42.0
+  controllerConfigRef:
+    name: provider-aws-controller-config
+
+---
+
 apiVersion: pkg.crossplane.io/v1alpha1
 kind: ControllerConfig
 metadata:

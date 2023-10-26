@@ -26,6 +26,12 @@ spec:
                 default: sydney
             required:
               - region
+          status:
+            type: object
+            properties:
+              bucketArn:
+                description: ARN of bucket
+                type: string
     served: true
     referenceable: true
   claimNames:

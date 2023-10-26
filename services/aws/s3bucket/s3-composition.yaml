@@ -3,7 +3,7 @@ kind: Composition
 metadata:
   labels:
     vpc: dbsn_dataservices
-    provider: "aws"
+    provider: aws
   name: xbucket.s3.aws.apa.org
 spec:
   compositeTypeRef:
@@ -16,9 +16,51 @@ spec:
       name: s3-bucket
       apiVersion: s3.aws.upbound.io/v1beta1
       kind: Bucket
+      metadata:
+        labels:
+          xbucket.s3.aws.apa.org/bucketId: id
       spec:
+        providerConfigRef:
+          name: default
         forProvider:
           region: ap-southeast-2
+          tags:
+            owner: apa
+            service: unset     
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    patches:
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.writeConnectionSecretToRef.name
+      transforms:
+      - string:
+          fmt: '%s-s3'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: status.atProvider.arn
+      toFieldPath: status.bucketArn
+      type: ToCompositeFieldPath
+    - fromFieldPath: spec.region
+      toFieldPath: spec.forProvider.region
+      transforms:
+      - type: map
+        map:
+          sydney: ap-southeast-2
+          singapore: ap-southeast-1
+  - base:
+      name: s3-bucketaccess
+      apiVersion: s3.aws.upbound.io/v1beta1
+      kind: BucketPublicAccessBlock
+      spec:
+        providerConfigRef:
+          name: default
+        forProvider:
+          region: ap-southeast-2
+          blockPublicAcls: false
+          blockPublicPolicy: false
+          bucketSelector:
+            matchControllerRef: true
     patches:
     - fromFieldPath: spec.region
       toFieldPath: spec.forProvider.region
@@ -27,3 +69,55 @@ spec:
         map:
           sydney: ap-southeast-2
           singapore: ap-southeast-1
+  - base:
+      name: s3-bucketpolicy
+      apiVersion: s3.aws.upbound.io/v1beta1
+      kind: BucketPolicy
+      spec:
+        providerConfigRef:
+          name: default
+        forProvider:
+          region: ap-southeast-2
+          policy: ''
+          bucketSelector:
+            matchControllerRef: true
+    patches:
+    - fromFieldPath: spec.region
+      toFieldPath: spec.forProvider.region
+      transforms:
+      - type: map
+        map:
+          sydney: ap-southeast-2
+          singapore: ap-southeast-1
+    - fromFieldPath: status.bucketArn
+      toFieldPath: spec.forProvider.policy
+      transforms:
+        - type: string
+          string:
+            fmt: >
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "AllowGetObject",
+                    "Principal": {
+                      "AWS": "*"
+                    },
+                    "Effect": "Allow",
+                    "Action": [
+                      "s3:*"
+                    ],
+                    "Resource": [
+                      "%s/*"
+                    ],
+                    "Condition": {
+                      "StringEquals": {
+                        "aws:PrincipalOrgID": [
+                          "o-08i2i7oky6"
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+              
