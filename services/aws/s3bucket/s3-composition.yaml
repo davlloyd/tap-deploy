@@ -31,6 +31,14 @@ spec:
           namespace: crossplane-system
     patches:
     - fromFieldPath: metadata.uid
+      toFieldPath: metadata.labels.xbucket.s3.aws.apa.org/bucketId
+      transforms:
+      - string:
+          fmt: '%s-id'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: metadata.uid
       toFieldPath: spec.writeConnectionSecretToRef.name
       transforms:
       - string:
@@ -48,6 +56,40 @@ spec:
         map:
           sydney: ap-southeast-2
           singapore: ap-southeast-1
+  - base:
+      name: s3-accesspoint
+      apiVersion: s3control.aws.upbound.io/v1beta1
+      kind: AccessPoint
+      metadata:
+        labels:
+          xbucket.s3.aws.apa.org/bucketId: id
+      spec:
+        providerConfigRef:
+          name: default
+        forProvider:
+          region: ap-southeast-2
+          bucketSelector:
+            matchControllerRef: true
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+    patches:
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.writeConnectionSecretToRef.name
+      transforms:
+      - string:
+          fmt: '%s-s3ap'
+          type: Format
+        type: string
+      type: FromCompositeFieldPath
+    - fromFieldPath: metadata.uid
+      toFieldPath: metadata.labels.xbucket.s3.aws.apa.org/bucketId
+    - fromFieldPath: metadata.uid
+      toFieldPath: spec.forProvider.name
+      transforms:
+      - string:
+          fmt: '%s-ap'
+          type: Format
+        type: string
   - base:
       name: s3-bucketaccess
       apiVersion: s3.aws.upbound.io/v1beta1
@@ -120,4 +162,3 @@ spec:
                   }
                 ]
               }
-              

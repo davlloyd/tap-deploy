@@ -139,9 +139,8 @@ spec:
         string:
           fmt: "%s-%s"
       toFieldPath: spec.forProvider.tags['service']
-    - fromFieldPath: spec.forProvider.tags['service']
+    - fromFieldPath: status.atProvider.tags['service']
       toFieldPath: spec.forProvider.vpcSecurityGroupIds
-      type: FromCompositeFieldPath
       transforms:
       - type: map
         map:
@@ -149,3 +148,5 @@ spec:
           sydney-postgres: [sg-07ebdf8570e72e4e8,sg-0d6bd77db201af85fa]
           singapore-mysql: [sg-0c5c3d3010f37b05e,sg-0a339b1c60c948327]
           singapore-postgres: [sg-0c5c3d3010f37b05e,sg-0882f511ebb5a4c0a]    
+      type: FromCompositeFieldPath
+

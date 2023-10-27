@@ -8,7 +8,7 @@ kind: Provider
 metadata:
   name: provider-family-aws
 spec:
-  package: xpkg.upbound.io/upbound/provider-family-aws:v0.42.0
+  package: xpkg.upbound.io/upbound/provider-family-aws:v0.43.0
   controllerConfigRef:
     name: provider-aws-controller-config
 
@@ -18,9 +18,9 @@ spec:
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
-  name: provider-aws-rds-config
+  name: provider-aws-rds
 spec:
-  package: xpkg.upbound.io/upbound/provider-aws-rds:v0.42.0
+  package: xpkg.upbound.io/upbound/provider-aws-rds:v0.43.0
   controllerConfigRef:
     name: provider-aws-controller-config
 
@@ -30,14 +30,26 @@ spec:
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
-  name: provider-aws-s3-config
+  name: provider-aws-s3
 spec:
-  package: xpkg.upbound.io/upbound/provider-aws-s3:v0.42.0
+  package: xpkg.upbound.io/upbound/provider-aws-s3:v0.43.0
   controllerConfigRef:
     name: provider-aws-controller-config
 
 ---
 
+# The AWS S3 Control Provider
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-aws-s3control
+spec:
+  package: xpkg.upbound.io/upbound/provider-aws-s3control:v0.43.0
+  controllerConfigRef:
+    name: provider-aws-controller-config
+
+
+---
 apiVersion: pkg.crossplane.io/v1alpha1
 kind: ControllerConfig
 metadata:
