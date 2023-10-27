@@ -115,7 +115,14 @@ spec:
       - type: map
         map:
           sydney: [sg-07ebdf8570e72e4e8,sg-088b39db3d9664b41]
-          singapore: [sg-0c5c3d3010f37b05e,sg-005170f9abcc76e33]    
+          singapore: [sg-0c5c3d3010f37b05e,sg-005170f9abcc76e33]
+    - fromFieldPath: spec.region
+      toFieldPath: spec.forProvider.dbSubnetGroupName
+      transforms:
+      - type: map
+        map:
+          sydney: dbsn_dataservices
+          singapore: dbsn_dataservices
     - fromFieldPath: "spec.dbType"
       toFieldPath: "spec.writeConnectionSecretToRef.type"
       transforms:
