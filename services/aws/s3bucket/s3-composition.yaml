@@ -20,6 +20,7 @@ spec:
         labels:
           xbucket.s3.aws.apa.org/bucketId: id
       spec:
+        deletionPolicy: Delete
         providerConfigRef:
           name: default
         forProvider:
@@ -42,7 +43,7 @@ spec:
       toFieldPath: spec.writeConnectionSecretToRef.name
       transforms:
       - string:
-          fmt: '%s-s3'
+          fmt: '%s-s3bucket'
           type: Format
         type: string
       type: FromCompositeFieldPath
