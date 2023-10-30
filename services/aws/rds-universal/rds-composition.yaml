@@ -73,6 +73,8 @@ spec:
       toFieldPath: spec.forProvider.allocatedStorage
     - fromFieldPath: spec.dbName
       toFieldPath: spec.forProvider.dbName
+    - fromFieldPath: spec.dbSubnetGroupName
+      toFieldPath: spec.forProvider.dbSubnetGroupName
     - fromFieldPath: spec.publiclyAccessible
       toFieldPath: spec.forProvider.publiclyAccessible
       transforms:
@@ -109,6 +111,13 @@ spec:
         map:
           mysql: '8.0.34'
           postgres: '13.7'
+    #- fromFieldPath: spec.region
+    #  toFieldPath: spec.forProvider.vpcSecurityGroupIds
+    #  transforms:
+    #  - type: map
+    #    map:
+    #      sydney: [sg-07ebdf8570e72e4e8,sg-088b39db3d9664b41]
+    #      singapore: [sg-0c5c3d3010f37b05e,sg-005170f9abcc76e33]
     - fromFieldPath: spec.region
       toFieldPath: spec.forProvider.dbSubnetGroupName
       transforms:
@@ -132,13 +141,16 @@ spec:
         string:
           fmt: "%s-%s"
       toFieldPath: spec.forProvider.tags['service']
-    - fromFieldPath: status.atProvider.tags['service']
+    - type: ToCompositeFieldPath
+      fromFieldPath: spec.forProvider.tags['service']
+      toFieldPath: status.operations.servicetype
+    - fromFieldPath: status.operations.servicetype
       toFieldPath: spec.forProvider.vpcSecurityGroupIds
       transforms:
       - type: map
         map:
           sydney-mysql: [sg-07ebdf8570e72e4e8,sg-0647c59f867d018ed]
-          sydney-postgres: [sg-07ebdf8570e72e4e8,sg-0d6bd77db201af85fa]
+          sydney-postgres: [sg-07ebdf8570e72e4e8,sg-0d6bd77db201af85f]
           singapore-mysql: [sg-0c5c3d3010f37b05e,sg-0a339b1c60c948327]
           singapore-postgres: [sg-0c5c3d3010f37b05e,sg-0882f511ebb5a4c0a]    
 

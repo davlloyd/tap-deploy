@@ -68,7 +68,18 @@ spec:
                 enum:
                  - mysql
                  - postgres
+              dbSubnetGroupName:
+                type: string
+                default: dbsn_dataservices
             type: object
+          status:
+            description: Field utilised for value sharing between base templates
+            type: object
+            properties:
+              operations:
+                description: Custom field to pass operational values between templates
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
         type: object
     served: true
 
