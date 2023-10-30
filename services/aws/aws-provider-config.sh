@@ -25,7 +25,7 @@ cat <<EOF | kubectl apply -f -
 apiVersion: aws.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:
-  name: default
+  name: aws-config
 spec:
   credentials:
     source: Secret

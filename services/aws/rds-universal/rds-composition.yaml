@@ -36,14 +36,16 @@ spec:
           dbSubnetGroupName: dbsn_dataservices
           tags:
             owner: "apa"
-            service: "unset"     
+            service: "unset"
+        providerConfigRef:
+          name: aws-config   
         writeConnectionSecretToRef:
           namespace: crossplane-system
     connectionDetails:
     - name: provider
       value: aws
     - name: type
-      fromFieldPath: spec.forProvider.engine
+      fromFieldPath: spec.forProvider.tags['provider']
     - name: database
       fromFieldPath: spec.forProvider.dbName
     - fromConnectionSecretKey: username
@@ -132,6 +134,13 @@ spec:
         map:
           mysql: "mysql"
           postgres: "postgres"
+    - fromFieldPath: "spec.dbType"
+      toFieldPath: "spec.forProvider.tags['provider']"
+      transforms:
+      - type: map
+        map:
+          mysql: "mysql"
+          postgres: "postgresql"
     - type: CombineFromComposite
       combine:
         variables:

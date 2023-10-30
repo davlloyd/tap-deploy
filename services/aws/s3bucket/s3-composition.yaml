@@ -21,13 +21,13 @@ spec:
           xbucket.s3.aws.apa.org/bucketId: id
       spec:
         deletionPolicy: Delete
-        providerConfigRef:
-          name: default
         forProvider:
           region: ap-southeast-2
           tags:
             owner: apa
             service: unset     
+        providerConfigRef:
+          name: aws-config   
         writeConnectionSecretToRef:
           namespace: crossplane-system
     patches:
@@ -65,12 +65,12 @@ spec:
         labels:
           xbucket.s3.aws.apa.org/bucketId: id
       spec:
-        providerConfigRef:
-          name: default
         forProvider:
           region: ap-southeast-2
           bucketSelector:
             matchControllerRef: true
+        providerConfigRef:
+          name: aws-config   
         writeConnectionSecretToRef:
           namespace: crossplane-system
     patches:
@@ -96,14 +96,14 @@ spec:
       apiVersion: s3.aws.upbound.io/v1beta1
       kind: BucketPublicAccessBlock
       spec:
-        providerConfigRef:
-          name: default
         forProvider:
           region: ap-southeast-2
           blockPublicAcls: false
           blockPublicPolicy: false
           bucketSelector:
             matchControllerRef: true
+        providerConfigRef:
+          name: aws-config   
     patches:
     - fromFieldPath: spec.region
       toFieldPath: spec.forProvider.region
@@ -117,13 +117,13 @@ spec:
       apiVersion: s3.aws.upbound.io/v1beta1
       kind: BucketPolicy
       spec:
-        providerConfigRef:
-          name: default
         forProvider:
           region: ap-southeast-2
           policy: ''
           bucketSelector:
             matchControllerRef: true
+        providerConfigRef:
+          name: aws-config   
     patches:
     - fromFieldPath: spec.region
       toFieldPath: spec.forProvider.region
