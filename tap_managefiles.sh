@@ -24,52 +24,62 @@ shared:
   kubernetes_version: "$K8SMAJORVERSION.$K8SMINORVERSION"
   image_registry:
     project_path: "$REGISTRY_HOST/$REGISTRY_PROJECT/$REGISTRY_REPO_TBS"
-    username: "$REGISTRY_ACCOUNT"
-    password: '$REGISTRY_PASSWORD'
+    secret:
+      name: registry-credentials
+      namespace: tap-install
+EOF
 
 
-contour:
-  envoy:
-    service:
-      type: $SERVICE_TYPE
+
+if [[ -f "$REGISTRY_CERTIFICATE_FILE" ]]; then
+    log "Reading Registry certificate file $REGISTRY_CERTIFICATE_FILE"
+    REGISTRY_CERTIFICATE=$(cat $REGISTRY_CERTIFICATE_FILE)
+    log "Setup to use custom registry certificate"
+
+    cat >> "tap-values.yml" <<EOF
+  ca_cert_data: |
+$REGISTRY_CERTIFICATE
+EOF
+
+fi
+
+cat >> "tap-values.yml" <<EOF
+
 
 buildservice:
   kp_default_repository: "$REGISTRY_HOST/$REGISTRY_PROJECT/$REGISTRY_REPO_TBS"
-  kp_default_repository_username: "$REGISTRY_ACCOUNT"
-  kp_default_repository_password: '$REGISTRY_PASSWORD'
+  kp_default_repository_secret:
+    name: registry-credentials
+    namespace: tap-install
   exclude_dependencies: $TBS_FULL_DEPENDENCIES    # Need to add logic to do post update of full packages if set to true
-  #extras start below
-  #descriptor_name: "$DESCRIPTOR_NAME"
-  #enable_automatic_dependency_updates: true
-  #tanzunet_username: "$PIVNET_ACCOUNT"
-  #tanzunet_password: "$PIVNET_PASSWORD"
+
+
+local_source_proxy:
+  repository: "$REGISTRY_HOST/$REGISTRY_PROJECT/$REGISTRY_REPO_LOCALPROXY"
+  push_secret:
+    name: lsp-registry-credentials
+    namespace: tap-install
+    create_export: true
+
 
 accelerator:
   ingress:
     include: true
 
-
 metadata_store:
   ns_for_export_app_cert: "*"
   app_service_type: $SERVICE_TYPE
-  #ingressDomain: "$CUSTOM_DOMAIN"
-  #ingress_enabled: "true"
 
-
-scanning:
-  #metadataStore:
-  #  url: ""
-
-grype:
-  targetImagePullSecret: "registry-credentials"
-
-#learningcenter:
-#  ingressDomain: "learningcenter.$CUSTOM_DOMAIN"
 
 policy:
   tuf_enabled: false
 
-  
+grype:
+  targetImagePullSecret: "registry-credentials"
+
+cnrs:
+  domain_name: "apps.$CUSTOM_DOMAIN"
+
 tap_gui:
   metadataStoreAutoconfiguration: true
   service_type: "$SERVICE_TYPE"
@@ -92,18 +102,18 @@ tap_gui:
       baseUrl: https://tap-gui.$CUSTOM_DOMAIN
       cors:
         origin: https://tap-gui.$CUSTOM_DOMAIN
+      #database:
+      #  client: pg
+      #  connection:
+      #    host: "$PG_HOSTNAME"
+      #    port: "5432"
+      #    user: "$PG_USERNAME"
+      #    password: "$PG_PASSWORD"
+      #    ssl: "false"
     integrations:
       github:
         - host: github.com
           token: $GIT_ACCESS_TOKEN
-    #proxy:
-    #  /metadata-store:
-    #    target: https://metadata-store-app.metadata-store:8443/api/v1
-    #    changeOrigin: true
-    #    secure: false
-    #    headers:
-    #      Authorization: "Bearer $STORE_ACCESS_TOKEN"
-    #      X-Custom-Source: project-star 
     auth:
       allowGuestAccess: true
       environment: development
@@ -122,12 +132,15 @@ tap_gui:
       generators:
         techdocs: docker
       publisher:
-        type: googleGcs
-        googleGcs:
+        type: $DOC_BUCKET_TYPE
+        $DOC_BUCKET_TYPE:
           bucketName: $DOC_BUCKET
-          credentials: '$DOC_BUCKET_CRED'
+          bucketRootPath: '/'
+          credentials:
+            accessKeyId: $DOC_BUCKET_ACCESSID
+            secretAccessKey: $DOC_BUCKET_SECRET
+          endpoint: $DOC_BUCKET_ENDPOINT
 EOF
-
 
 
 if [ "$CERT_WILDCARD_ENABLED" == 1 ]; then
@@ -138,8 +151,10 @@ cat >> "tap-values.yml" <<EOF
     namespace: $CERT_WILDCARD_NAMESPACE
     secretName: $CERT_WILDCARD_SECRET
 
-cnrs:
-  domain_name: "apps.$CUSTOM_DOMAIN"
+contour:
+  envoy:
+    service:
+      type: $SERVICE_TYPE
   default_tls_secret: $CERT_WILDCARD_NAMESPACE/$CERT_WILDCARD_SECRET
 
 EOF
@@ -147,13 +162,18 @@ EOF
 else
   log "Wildcard certificate not used"
 
-cat >> "tap-values.yml" <<EOF
+fi
 
-cnrs:
-  domain_name: "apps.$CUSTOM_DOMAIN"
+if [ "$TMC_GITOPS_ENABLED" == 1 ]; then
+  log "Prevent FluxCD and Cert-manager from being installed"
+
+  cat >> "tap-values.yml" <<EOF
+
+excluded_packages:
+- fluxcd.source.controller.tanzu.vmware.com
+- cert-manager.tanzu.vmware.com
 
 EOF
-
 fi
 
 if [ "$GITOPS_ENABLED" == 1 ]; then
@@ -185,6 +205,9 @@ namespace_provisioner:
   - name: git-auth
     namespace: tap-install
     create_export: true
+  # - name: team-secret-store
+  #   namespace: tap-install
+  #   create_export: true
   overlay_secrets:
   - name: git-auth-overlay
     namespace: tap-install

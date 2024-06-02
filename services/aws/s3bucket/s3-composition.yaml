@@ -30,6 +30,9 @@ spec:
           name: aws-config   
         writeConnectionSecretToRef:
           namespace: crossplane-system
+    connectionDetails:
+      - name: bucket_name
+        fromConnectionSecretKey: endpoint
     patches:
     - fromFieldPath: metadata.uid
       toFieldPath: metadata.labels.xbucket.s3.aws.apa.org/bucketId
@@ -43,10 +46,13 @@ spec:
       toFieldPath: spec.writeConnectionSecretToRef.name
       transforms:
       - string:
-          fmt: '%s-s3bucket'
+          fmt: '%s-s3-connection'
           type: Format
         type: string
       type: FromCompositeFieldPath
+    - fromFieldPath: metadata.name
+      toFieldPath: status.name
+      type: ToCompositeFieldPath
     - fromFieldPath: status.atProvider.arn
       toFieldPath: status.bucketArn
       type: ToCompositeFieldPath
@@ -163,3 +169,97 @@ spec:
                   }
                 ]
               }
+  # - base:
+  #     apiVersion: iam.aws.upbound.io/v1beta1
+  #     kind: User
+  #     spec:
+  #       deletionPolicy: Delete
+  #       writeConnectionSecretToRef:
+  #         namespace: crossplane-system
+  #       forProvider:
+  #         path: "/"
+  #       providerConfigRef:
+  #         name: aws-config
+  #   patches:
+  #     - fromFieldPath: status.name
+  #       toFieldPath: metadata.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user"
+  #     - fromFieldPath: status.name
+  #       toFieldPath: spec.writeConnectionSecretToRef.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user-details"
+  # - base:
+  #     apiVersion: iam.aws.upbound.io/v1beta1
+  #     kind: UserPolicyAttachment
+  #     spec:
+  #       deletionPolicy: Delete
+  #       writeConnectionSecretToRef:
+  #         namespace: crossplane-system
+  #       forProvider: {}
+  #       providerConfigRef:
+  #         name: aws-config
+  #   patches:
+  #     - fromFieldPath: status.name
+  #       toFieldPath: metadata.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user-bucket-policy"
+  #     - fromFieldPath: status.bucketArn
+  #       toFieldPath: "spec.forProvider.policyArnRef.name"
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-bucket-access-policy"
+  #     - fromFieldPath: "status.name"
+  #       toFieldPath: "spec.forProvider.userNameRef.name"
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user"
+  #     - fromFieldPath: status.name
+  #       toFieldPath: spec.writeConnectionSecretToRef.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user-details"
+  # - base:
+  #     apiVersion: iam.aws.upbound.io/v1beta1
+  #     kind: AccessKey
+  #     spec:
+  #       deletionPolicy: Delete
+  #       writeConnectionSecretToRef:
+  #         namespace: crossplane-system
+  #       forProvider: {}
+  #       providerConfigRef:
+  #         name: aws-config
+  #   patches:
+  #     - fromFieldPath: status.name
+  #       toFieldPath: metadata.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user-access-key"
+  #     - fromFieldPath: status.name
+  #       toFieldPath: spec.forProvider.userNameRef.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user"
+  #     - fromFieldPath: status.name
+  #       toFieldPath: spec.writeConnectionSecretToRef.name
+  #       transforms:
+  #       - type: string
+  #         string:
+  #           fmt: "%s-user-access-key"
+  #   connectionDetails:
+  #     - name: account_id
+  #       fromConnectionSecretKey: username
+  #     - name: account_key
+  #       fromConnectionSecretKey: password
+  

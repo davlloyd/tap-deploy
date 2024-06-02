@@ -11,14 +11,15 @@ function cleanSecret(){
 }
 
 # Add Pivnet access
-log "Add Pivnet registry credentials"
+# log "Add Pivnet registry credentials"
 
 cleanSecret tap-registry tap-install
 tanzu secret registry add tap-registry \
-    --username $PIVNET_ACCOUNT --password $PIVNET_PASSWORD \
+    --username $PIVNET_ACCOUNT \
+    --password $PIVNET_PASSWORD \
     --server registry.tanzu.vmware.com \
-    --export-to-all-namespaces \
     --namespace tap-install \
+    --export-to-all-namespaces \
     --yes  > /dev/null 2>&1
 
 
@@ -34,6 +35,19 @@ tanzu secret registry add registry-credentials \
     --export-to-all-namespaces \
     --yes > /dev/null 2>&1
 
+# Add internal registry credentials
+log "Add internal registry credentials for local proxy"
+
+cleanSecret lsp-registry-credentials tap-install
+tanzu secret registry add lsp-registry-credentials \
+    --username $REGISTRY_ACCOUNT \
+    --password "$REGISTRY_PASSWORD" \
+    --server $REGISTRY_HOST \
+    --namespace tap-install \
+    --export-to-all-namespaces \
+    --yes > /dev/null 2>&1
+
+
 
 # Add git repo credentials
 log "Add Git Repository credentials"
@@ -45,13 +59,40 @@ kubectl apply -n tap-install -f - << EOF > /dev/null 2>&1
     kind: Secret
     metadata:
         name: git-access
-        annotations:
-            tekton.dev/git-0: $GITOPS_SERVER
-    type: kubernetes.io/basic-auth 
+    type: Opaque
     stringData:
         username: $GITOPS_ACCOUNT
         password: $GIT_ACCESS_TOKEN
 EOF
+
+
+
+# Add ns configs
+log "Add NS pinned configs"
+
+
+# cleanSecret team-secret-store tap-install
+# kubectl apply -n tap-install -f - << EOF > /dev/null 2>&1
+#     apiVersion: v1
+#     kind: Secret
+#     metadata:
+#       name: team-secret-store
+#     type: Opaque
+#     stringData:
+#         content.yaml: |
+#             alpha:
+#                 username: alphauser
+#                 password: alphapass
+#             beta:
+#                 username: betaauser
+#                 password: betaapass
+#             charlie:
+#                 username: charlieuser
+#                 password: charliepass
+#             delta:
+#                 username: deltauser
+#                 password: deltapass
+# EOF    
 
 
 # Add git repo credentials for namespace proviosing

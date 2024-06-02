@@ -48,6 +48,17 @@ spec:
   controllerConfigRef:
     name: provider-aws-controller-config
 
+---
+
+# The AWS S3 Control Provider
+# apiVersion: pkg.crossplane.io/v1
+# kind: Provider
+# metadata:
+#   name: provider-aws-iam
+# spec:
+#   package: xpkg.upbound.io/upbound/provider-aws-iam:v0.43.0
+#   controllerConfigRef:
+#     name: provider-aws-controller-config
 
 ---
 apiVersion: pkg.crossplane.io/v1alpha1

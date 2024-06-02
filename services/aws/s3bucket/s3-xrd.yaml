@@ -7,6 +7,10 @@ spec:
   names:
     kind: XBucket
     plural: xbuckets
+  connectionSecretKeys:
+    - account_id
+    - account_key
+    - bucket_name
   versions:
   - name: v1alpha1
     schema:
@@ -31,6 +35,9 @@ spec:
             properties:
               bucketArn:
                 description: ARN of bucket
+                type: string
+              name:
+                description: Name of bucket
                 type: string
     served: true
     referenceable: true

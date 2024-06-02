@@ -186,15 +186,31 @@ installPackage tap tap.tanzu.vmware.com $TAP_RELEASE tap-values.yml 60m
 
 
 # add all build packs
-if [[ $TBS_FULL_DEPENDENCIES == "true" ]]; then
-  log "Install Full dependency buildpacks"
+shopt -s nocasematch
+if [[ $PACKAGE_PROFILE != "run" ]] && [[ $PACKAGE_PROFILE != "view" ]]; then
 
-  tanzu package repository add full-deps-package-repo \
-    --url registry.tanzu.vmware.com/tanzu-application-platform/full-deps-package-repo:$TAP_RELEASE \
-    --namespace tap-install > /dev/null 2>&1
+  if [[ $TBS_FULL_DEPENDENCIES == "true" ]]; then
+    log "Install Full dependency buildpacks"
 
-  installPackage full-deps full-deps.buildservice.tanzu.vmware.com "> 0.0.0"
+    tanzu package repository add full-deps-package-repo \
+      --url registry.tanzu.vmware.com/tanzu-application-platform/full-deps-package-repo:$TAP_RELEASE \
+      --namespace tap-install > /dev/null 2>&1
+    sleep 15
+    
+    log "Validate build package available"
+    CHECK=$(tanzu package available get full-deps.buildservice.tanzu.vmware.com  -n tap-install)
+    while [ "$CHECK" == "*not found*" ]
+    do
+      printf "."
+      CHECK=$(tanzu package available get full-deps.buildservice.tanzu.vmware.com  -n tap-install)
+      sleep 1
+    done
+
+    installPackage full-tbs-deps full-deps.buildservice.tanzu.vmware.com "> 0.0.0" tap-values.yml
+  fi
+
 fi
+shopt -u nocasematch
 
 ### Set namesapce for developer access and application deployment
 log "Setup $DEV_NAMESPACE namespace for workloads"

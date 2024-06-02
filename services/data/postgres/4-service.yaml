@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres 
+  labels:
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - port: 8432
+      protocol: TCP
+      targetPort: 5432
+  sessionAffinity: None  
+  type: LoadBalancer
